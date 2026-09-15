@@ -1,0 +1,2110 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spectron Toys — Social Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Luckiest+Guy&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#3A3530;
+    --paper:#FBF7F1;
+    --paper-dim:#F1E9DC;
+    --signal:#D98C6B;
+    --forest:#7C8B80;
+    --bordeaux:#B5533D;
+    --steel:#9A9184;
+    --steel-line:#E4DBCB;
+    --white:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:28px 20px 80px;
+  }
+
+  /* ---------- Header ---------- */
+  .masthead{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    border-bottom:3px solid var(--ink);
+    padding-bottom:14px;
+    margin-bottom:6px;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  .brandmark{
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  .brandmark .logo{
+    width:180px;
+    height:auto;
+    flex:none;
+    display:block;
+    mix-blend-mode:multiply;
+  }
+  .brandmark .divider{
+    width:1px;
+    align-self:stretch;
+    background:var(--steel-line);
+    margin:2px 0;
+  }
+  .brandmark h1{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:19px;
+    letter-spacing:0.4px;
+    
+    margin:0;
+    line-height:1.15;
+  }
+  .brandmark p{
+    margin:4px 0 0;
+    font-size:11.5px;
+    color:var(--steel);
+    font-family:'IBM Plex Mono',monospace;
+    letter-spacing:0.4px;
+  }
+  .hazard{
+    height:10px;
+    width:100%;
+    margin-bottom:34px;
+    background:var(--forest);
+  }
+
+  /* ---------- Layout ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:360px 1fr;
+    gap:28px;
+    align-items:start;
+  }
+
+  /* ---------- Panel (spec sheet) ---------- */
+  .panel{
+    background:var(--white);
+    border:1px solid var(--ink);
+    position:sticky;
+    top:20px;
+  }
+  .panel-head{
+    background:var(--ink);
+    color:var(--paper);
+    padding:12px 16px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    display:flex;
+    justify-content:space-between;
+  }
+  .field{
+    padding:16px 18px;
+    border-bottom:1px solid var(--steel-line);
+  }
+  .field:last-of-type{border-bottom:none;}
+  .field-num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    color:var(--bordeaux);
+    letter-spacing:1px;
+    display:block;
+    margin-bottom:6px;
+  }
+  .field label.title{
+    display:block;
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:17px;
+    
+    letter-spacing:0.3px;
+    margin-bottom:10px;
+  }
+  select, input[type=text]{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--ink);
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:500;
+    appearance:none;
+    -webkit-appearance:none;
+    border-radius:0;
+  }
+  select{
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='%2314171A' d='M5 7l5 6 5-6z'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 8px center;
+    padding-right:28px;
+  }
+  select:focus, input[type=text]:focus{
+    outline:2px solid var(--forest);
+    outline-offset:1px;
+  }
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .chip-opt{
+    border:1px solid var(--ink);
+    padding:6px 10px;
+    font-size:12.5px;
+    font-weight:600;
+    cursor:pointer;
+    user-select:none;
+    background:var(--paper);
+    transition:background .12s, color .12s;
+  }
+  .chip-opt input{
+    display:none;
+  }
+  .chip-opt.on{
+    background:var(--ink);
+    color:var(--signal);
+  }
+  .chip-opt:focus-within{
+    outline:2px solid var(--forest);
+    outline-offset:2px;
+  }
+  .field .hint{
+    font-size:11.5px;
+    color:var(--steel);
+    margin-top:6px;
+    line-height:1.4;
+  }
+  .count-row{
+    display:flex;
+    gap:8px;
+  }
+  .count-row select{width:auto; flex:1;}
+
+  /* ---------- Image picker ---------- */
+  .img-field{
+    padding:16px 18px;
+    border-bottom:1px solid var(--steel-line);
+  }
+  .img-field .title{
+    display:block;
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:17px;
+    
+    letter-spacing:0.3px;
+    margin-bottom:10px;
+  }
+  .img-gallery{
+    display:flex;
+    gap:14px;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+    scrollbar-width:thin;
+    padding:3px 3px 12px;
+    margin-bottom:10px;
+  }
+  .img-thumb{
+    position:relative;
+    flex:0 0 min(78%,260px);
+    aspect-ratio:4/3;
+    scroll-snap-align:start;
+    border:2px solid transparent;
+    background:var(--paper) center/cover no-repeat;
+    cursor:pointer;
+    overflow:hidden;
+  }
+  .img-thumb img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .img-thumb.selected{
+    border-color:var(--forest);
+    outline:2px solid var(--signal);
+    outline-offset:-4px;
+  }
+  .img-thumb.selected::after{
+    content:"✓";
+    position:absolute;
+    top:3px;right:3px;
+    width:16px;height:16px;
+    background:var(--signal);
+    color:var(--ink);
+    font-size:10px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    line-height:1;
+  }
+  .gallery-wrap{position:relative;}
+  .gallery-arrow{
+    position:absolute;z-index:3;top:50%;transform:translateY(-58%);
+    width:34px;height:34px;border:0;border-radius:50%;background:#fff;color:var(--ink);
+    box-shadow:0 4px 14px rgba(30,31,60,.22);cursor:pointer;font-size:20px;line-height:1;
+  }
+  .gallery-arrow.prev{left:-9px}.gallery-arrow.next{right:-9px}
+  .img-thumb.loading-thumb{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--steel);
+    font-size:10px;
+    font-family:'IBM Plex Mono',monospace;
+    background:var(--paper-dim);
+  }
+  .upload-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    width:100%;
+    border:1.5px dashed var(--ink);
+    background:transparent;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    padding:11px;
+    cursor:pointer;
+    transition:background .12s;
+  }
+  .upload-btn:hover{
+    background:var(--paper-dim);
+  }
+  .upload-btn input[type=file]{
+    display:none;
+  }
+  .upload-btn .icon{
+    font-size:15px;
+    line-height:1;
+  }
+  .img-hint{
+    font-size:11px;
+    color:var(--steel);
+    margin-top:6px;
+    line-height:1.4;
+  }
+  .img-adjust{
+    background:var(--white);
+    border:1px solid var(--ink);
+    padding:16px 18px;
+    margin-bottom:20px;
+  }
+  .img-adjust .adj-row{
+    margin-bottom:10px;
+  }
+  .img-adjust .adj-row:last-of-type{margin-bottom:0;}
+  .img-adjust label{
+    display:flex;
+    justify-content:space-between;
+    font-size:11.5px;
+    font-weight:600;
+    margin-bottom:4px;
+    font-family:'IBM Plex Mono',monospace;
+    letter-spacing:0.2px;
+  }
+  .img-adjust label span{color:var(--forest);}
+  .img-adjust input[type=range]{
+    width:100%;
+    accent-color:var(--forest);
+    height:18px;
+  }
+  .img-adjust .reset-btn{
+    margin-top:4px;
+    border:1px solid var(--steel-line);
+    background:transparent;
+    color:var(--steel);
+    font-size:11px;
+    padding:5px 10px;
+    cursor:pointer;
+  }
+  .img-adjust .reset-btn:hover{border-color:var(--ink); color:var(--ink);}
+
+  .generate-btn{
+    width:100%;
+    border:none;
+    background:var(--signal);
+    color:var(--ink);
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:19px;
+    letter-spacing:0.6px;
+    
+    padding:16px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    transition:transform .08s ease;
+  }
+  .generate-btn:hover{transform:translateY(-1px);}
+  .generate-btn:active{transform:translateY(0px);}
+  .generate-btn:disabled{
+    background:var(--steel-line);
+    color:var(--steel);
+    cursor:default;
+    transform:none;
+  }
+  .generate-btn .arrow{transition:transform .15s;}
+  .generate-btn:not(:disabled):hover .arrow{transform:translateX(3px);}
+
+  /* ---------- Output ---------- */
+  .output-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .output-head h2{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:22px;
+    
+    margin:0;
+  }
+  .output-head span{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--steel);
+  }
+
+  .editable{
+    cursor:text;
+    outline:none;
+    border-radius:1px;
+    transition:background .1s;
+  }
+  .editable:hover{
+    background:rgba(203,255,61,0.35);
+  }
+  .editable:focus{
+    background:rgba(203,255,61,0.55);
+    box-shadow:0 0 0 1px var(--forest);
+  }
+
+  .dl-all-btn{
+    border:1px solid var(--ink);
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.3px;
+    padding:7px 12px;
+    cursor:pointer;
+  }
+  .dl-all-btn:hover{background:var(--forest); border-color:var(--forest);}
+  .card-dl-row{
+    display:flex;
+    gap:8px;
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px dashed var(--steel-line);
+  }
+  .card-dl-btn{
+    border:1px solid var(--ink);
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:12.5px;
+    padding:8px 12px;
+    cursor:pointer;
+  }
+  .card-dl-btn:hover{background:var(--signal);}
+  .card-dl-btn:disabled{opacity:0.5;cursor:default;}
+
+  .empty{
+    border:1px dashed var(--steel-line);
+    padding:60px 24px;
+    text-align:center;
+    color:var(--steel);
+  }
+  .empty .glyph{
+    font-family:'Fraunces',serif;
+    font-size:44px;
+    font-weight:700;
+    color:var(--paper-dim);
+    line-height:1;
+    margin-bottom:10px;
+  }
+  .empty p{
+    max-width:340px;
+    margin:0 auto;
+    font-size:13.5px;
+    line-height:1.5;
+  }
+  .selection-prompt{
+    min-height:280px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px;
+    background:#fff;
+    border:1px solid var(--steel-line);
+  }
+  .selection-prompt p{
+    max-width:560px;
+    margin:0;
+    color:var(--ink);
+    font-size:24px;
+    font-weight:500;
+    line-height:1.35;
+    text-align:center;
+  }
+  .intro-prompt{
+    min-height:360px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:48px;
+    background:transparent;
+    border:0;
+    border-radius:0;
+  }
+  .intro-prompt p{
+    max-width:620px;
+    margin:0;
+    color:var(--ink);
+    font-size:24px;
+    font-weight:500;
+    line-height:1.45;
+    text-align:center;
+  }
+
+  .loading{
+    border:1px solid var(--ink);
+    padding:40px 24px;
+    text-align:center;
+    background:var(--white);
+  }
+  .loading .bar{
+    height:6px;
+    background:var(--paper-dim);
+    overflow:hidden;
+    margin:16px auto 0;
+    max-width:260px;
+  }
+  .loading .bar::after{
+    content:"";
+    display:block;
+    height:100%;
+    width:40%;
+    background:var(--signal);
+    animation:slide 1.1s ease-in-out infinite;
+  }
+  @keyframes slide{
+    0%{transform:translateX(-100%);}
+    100%{transform:translateX(350%);}
+  }
+  .loading p{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--steel);
+    margin:0;
+    letter-spacing:0.4px;
+  }
+
+  .error-box{
+    border:1px solid var(--bordeaux);
+    background:#FBF0F1;
+    color:var(--bordeaux);
+    padding:16px 18px;
+    font-size:13.5px;
+    line-height:1.5;
+  }
+
+  .cards{
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+  }
+  .card{
+    border:1px solid var(--ink);
+    background:var(--white);
+  }
+  .card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:9px 16px;
+    background:var(--ink);
+    color:var(--paper);
+  }
+  .card-top .variant{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:1px;
+  }
+  .card-top .platform-tag{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:13px;
+    text-transform:uppercase;
+    color:var(--signal);
+  }
+  .card-body{
+    padding:22px 24px;
+  }
+
+  /* social mock */
+  .mock-social{
+    border:1px solid var(--steel-line);
+    max-width:420px;
+  }
+  .mock-social .mock-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 12px;
+    border-bottom:1px solid var(--steel-line);
+  }
+  .mock-social .avatar{
+    width:28px;height:28px;
+    background:var(--ink);
+    position:relative;
+    flex:none;
+  }
+  .mock-social .avatar::after{
+    content:"";
+    position:absolute;inset:6px;
+    background:var(--signal);
+  }
+  .mock-social .handle{
+    font-weight:700;
+    font-size:12.5px;
+  }
+  .mock-social .canvas{
+    aspect-ratio:1/1;
+    background:var(--ink);
+    display:flex;
+    align-items:flex-end;
+    padding:20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .mock-social.vertical{max-width:320px;}
+  .mock-social .canvas.vertical-canvas{aspect-ratio:9/16;}
+  .mock-social .canvas .product-img{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    z-index:0;
+    transform-origin:center;
+  }
+  .mock-social .canvas .scrim{
+    position:absolute;
+    inset:0;
+    background:rgba(52,55,122,.28);
+    z-index:1;
+  }
+  .mock-social .canvas::before{
+    content:"";
+    position:absolute;
+    top:14px;right:14px;
+    width:46px;height:46px;
+    border-radius:50%;
+    background:var(--signal);
+    opacity:0.95;
+    z-index:2;
+  }
+  .mock-social .canvas .headline-on-image{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:26px;
+    line-height:1;
+    color:var(--paper);
+    
+    max-width:80%;
+    position:relative;
+    z-index:2;
+  }
+  .mock-social .canvas .ad-logo{
+    position:absolute;
+    top:14px;
+    right:14px;
+    width:124px;
+    height:auto;
+    z-index:3;
+    background:transparent;
+    border-radius:0;
+    padding:0;
+    box-shadow:none;
+    filter:brightness(0) invert(1);
+  }
+  .mock-social .caption{
+    padding:14px 12px 4px;
+    font-size:13.5px;
+    line-height:1.5;
+  }
+  .mock-social .caption b{font-weight:700;}
+  .mock-social .hashtags{
+    padding:2px 12px 14px;
+    font-size:12.5px;
+    color:var(--forest);
+    font-weight:600;
+  }
+  .mock-social .cta-row{
+    padding:12px;
+    border-top:1px solid var(--steel-line);
+  }
+  .cta-pill{
+    display:inline-block;
+    border:1px solid var(--ink);
+    padding:7px 14px;
+    font-weight:700;
+    font-size:12.5px;
+    text-transform:uppercase;
+    letter-spacing:0.3px;
+  }
+
+  /* google ad mock */
+  .mock-google{
+    max-width:520px;
+    border:1px solid var(--steel-line);
+    padding:16px 18px;
+  }
+  .mock-google .ad-tag{
+    display:inline-block;
+    font-weight:700;
+    font-size:11px;
+    color:var(--forest);
+    border:1px solid var(--forest);
+    padding:1px 5px;
+    margin-right:6px;
+  }
+  .mock-google .url{
+    font-size:12.5px;
+    color:var(--steel);
+    margin-top:4px;
+  }
+  .mock-google .g-headline{
+    color:#1a0dab;
+    font-size:19px;
+    margin-top:6px;
+    line-height:1.3;
+  }
+  .mock-google .g-desc{
+    font-size:13.5px;
+    color:#4d5156;
+    margin-top:6px;
+    line-height:1.5;
+  }
+
+  /* linkedin mock */
+  .mock-linkedin{
+    max-width:480px;
+    border:1px solid var(--steel-line);
+  }
+  .mock-linkedin .li-head{
+    display:flex;
+    gap:10px;
+    padding:12px;
+  }
+  .mock-linkedin .li-head .avatar{
+    width:32px;height:32px;
+    background:var(--forest);
+    flex:none;
+  }
+  .mock-linkedin .li-name{font-weight:700;font-size:13px;}
+  .mock-linkedin .li-sub{font-size:11.5px;color:var(--steel);}
+  .mock-linkedin .li-body{
+    padding:0 12px 14px;
+    font-size:13.5px;
+    line-height:1.55;
+  }
+  .mock-linkedin .li-cta{
+    border-top:1px solid var(--steel-line);
+    padding:10px 12px;
+    font-weight:700;
+    font-size:13px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+
+  .meta-row{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px dashed var(--steel-line);
+  }
+  .meta-item{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--steel);
+  }
+  .meta-item b{
+    color:var(--ink);
+  }
+  .over-limit{color:var(--bordeaux) !important;}
+  .over-limit b{color:var(--bordeaux) !important;}
+
+  .footer-note{
+    margin-top:40px;
+    padding-top:16px;
+    border-top:1px solid var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--steel);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+
+  /* Spectron Toys storefront styling */
+  :root{
+    --ink:#34377a;
+    --paper:#faf8fa;
+    --paper-dim:#f3eaf0;
+    --signal:#35c5d2;
+    --forest:#aa071b;
+    --bordeaux:#840313;
+    --steel:#686982;
+    --steel-line:#ded7df;
+  }
+  body{font-family:'Nunito Sans',sans-serif; background:#fff;}
+  .masthead{background:#fff;border-radius:18px;padding:16px 20px 18px;}
+  .output-head h2{color:var(--ink)!important;}
+  .output-head span,.output>p{color:var(--steel)!important;}
+  .footer-note{color:var(--steel);}
+  .grid{align-items:stretch;}
+  .output{display:flex;flex-direction:column;min-width:0;}
+  #resultsArea:empty{flex:1;min-height:420px;background:#f2f2f2;}
+  .wrap{max-width:1480px; padding:18px 24px 48px;}
+  .masthead{
+    align-items:center;
+    border-bottom:4px solid var(--ink);
+    padding:4px 0 22px;
+    margin-bottom:28px;
+  }
+  .brandmark{gap:22px;}
+  .brandmark .logo{width:190px; mix-blend-mode:normal;}
+  .brandmark .divider{background:#c8ceca;}
+  .brandmark h1,
+  .field label.title,
+  .img-field .title,
+  .output-head h2,
+  .generate-btn,
+  .card-top .platform-tag,
+  .mock-social .canvas .headline-on-image{
+    font-family:'Nunito Sans',sans-serif;
+  }
+  .brandmark h1{font-family:'Inter',sans-serif;font-size:94px;font-weight:900;letter-spacing:-3px;line-height:.95;color:#34377a;}
+  .spectron-logo{display:block;width:180px;height:auto;object-fit:contain;}
+  .spectron-ad-logo{width:112px!important;height:auto!important;object-fit:contain;filter:none!important;}
+  .brandmark p{font-family:'Nunito Sans',sans-serif; font-size:11px; letter-spacing:1.1px;}
+  .hazard{display:none;}
+  .panel-head{background:var(--ink);}
+  .field-num{color:var(--forest);}
+  .chip-opt.on{background:#f487b8;border-color:#f487b8;color:#34377a;}
+  .platform-tag{color:var(--ink);}
+  .grid{grid-template-columns:340px minmax(0,1fr); gap:28px;}
+  .panel,
+  .card,
+  .img-adjust,
+  .loading{
+    border:1px solid var(--steel-line);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(85,91,86,.06);
+  }
+  .img-adjust{
+    position:sticky;
+    top:12px;
+    z-index:20;
+    background:rgba(255,255,255,.97);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    box-shadow:0 10px 28px rgba(63,72,66,.13);
+  }
+  .panel-head,
+  .card-top{
+    background:var(--forest);
+    color:#fff;
+    border:0;
+  }
+  .panel-head{padding:14px 18px; font-family:'Nunito Sans',sans-serif; border-radius:17px 17px 0 0;}
+  .field-num{font-family:'Nunito Sans',sans-serif; color:var(--bordeaux); font-weight:700;}
+  .field label.title,.img-field .title{font-size:16px; font-weight:600; letter-spacing:0;}
+  select,input[type=text]{
+    font-family:'Nunito Sans',sans-serif;
+    background:#fbfaf7;
+    border:1px solid #cfd3cf;
+    border-radius:10px;
+    padding:11px 12px;
+  }
+  select:focus,input[type=text]:focus{outline:none; border-color:var(--forest); box-shadow:0 0 0 3px rgba(155,170,161,.2);}
+  .chip-opt{
+    border:1px solid #cbd1cc;
+    border-radius:999px;
+    background:#fbfaf7;
+    font-weight:600;
+    padding:7px 11px;
+  }
+  .chip-opt.on{background:var(--forest); border-color:var(--forest); color:#fff;}
+  .img-thumb{border-radius:10px;}
+  .img-thumb.selected{border-color:var(--forest); outline:none;}
+  .img-thumb.selected::after{background:var(--forest); color:#fff; border-radius:50%;}
+  .img-gallery{
+    display:flex;
+    gap:14px;
+    max-height:none;
+    overflow-x:auto;
+    overflow-y:hidden;
+    overscroll-behavior-x:contain;
+    padding:3px 3px 12px;
+    scrollbar-width:thin;
+    scrollbar-color:#35c5d2 #34377a;
+  }
+  .img-gallery::-webkit-scrollbar{height:7px;width:auto;}
+  .img-gallery::-webkit-scrollbar-track{background:#34377a;border-radius:999px;}
+  .img-gallery::-webkit-scrollbar-thumb{background:#35c5d2;border-radius:999px;}
+  .img-thumb{min-height:0;flex:0 0 245px;aspect-ratio:4/3;border-radius:18px;}
+  .upload-btn{
+    border:1.5px dashed var(--forest);
+    border-radius:10px;
+    background:#f3f6f4;
+    color:var(--ink);
+    font-family:'Nunito Sans',sans-serif;
+  }
+  .generate-btn{
+    background:#aa071b;
+    color:#fff;
+    border-radius:999px;
+    font-size:16px;
+    font-weight:700;
+    padding:14px 18px;
+  }
+  .generate-btn:hover{background:#840313; box-shadow:0 7px 18px rgba(70,25,28,.2);}
+  .output-head h2{font-size:25px; font-weight:500;}
+  .output-head span,.meta-item,.img-adjust label{font-family:'Nunito Sans',sans-serif;}
+  .empty{background:#fff; border:1px dashed #c9cfca; border-radius:18px; padding:72px 28px;}
+  .empty .glyph{color:var(--signal); font-family:'Nunito Sans',sans-serif; font-weight:400;}
+  .dl-all-btn,.card-dl-btn,.img-adjust .reset-btn,.cta-pill{
+    border-radius:999px;
+    font-family:'Nunito Sans',sans-serif;
+  }
+  .dl-all-btn{background:#34377a; border-color:#34377a; color:#fff;}
+  .dl-all-btn:hover{background:#98151e; border-color:#98151e;}
+  .card-dl-btn{border:1.5px solid var(--forest); background:#fff; color:#b31620;}
+  .card-dl-btn:hover{background:#35c5d2; border-color:#35c5d2; color:#34377a;}
+  .card-top{padding:12px 18px;}
+  .card-top .variant{font-family:'Nunito Sans',sans-serif;}
+  .card-top .platform-tag{color:#fff; font-weight:700;}
+  .mock-social,.mock-google,.mock-linkedin{border-color:var(--steel-line); border-radius:14px; overflow:hidden;}
+  .mock-social .avatar,.mock-linkedin .li-head .avatar{border-radius:50%; background:var(--forest);}
+  .mock-social .canvas .scrim{
+    display:block;
+    background:rgba(52,55,122,.28);
+    pointer-events:none;
+  }
+  .mock-social .canvas::before{display:none;}
+  .mock-social .canvas .ad-logo{display:block;}
+  .mock-social .canvas .headline-on-image{font-family:'Nunito Sans',sans-serif;font-weight:900;letter-spacing:-.6px;line-height:1.04;color:#fff;}
+  .g-headline,.li-body b{font-family:'Nunito Sans',sans-serif;font-weight:900;letter-spacing:-.35px;}
+  .cta-pill{border:1.5px solid #c51e2a; background:#c51e2a; color:#fff; text-transform:none;}
+  .footer-note{border-top:1px solid var(--steel-line); font-family:'Nunito Sans',sans-serif;}
+  .editable:hover{background:rgba(232,206,160,.25);}
+  .editable:focus{background:rgba(232,206,160,.35); box-shadow:0 0 0 1px var(--signal);}
+  .cards{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:18px;
+    align-items:start;
+  }
+  .card-body{padding:16px;}
+  .card{
+    cursor:pointer;
+    opacity:.72;
+    transition:opacity .15s ease, border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+  }
+  .card:hover{opacity:.9; transform:translateY(-1px);}
+  .card.active{
+    opacity:1;
+    border-color:#c51e2a;
+    box-shadow:0 0 0 3px rgba(197,30,42,.16),0 12px 30px rgba(70,25,28,.1);
+  }
+  .card.active .card-top{background:#c51e2a;}
+  /* Modern Spectron layout: color blocks instead of white divider lines */
+  .panel,.card,.img-adjust,.loading,.mock-social,.mock-google,.mock-linkedin,.empty{border:0!important;}
+  .panel{background:#f4eef3;box-shadow:0 18px 48px rgba(0,0,0,.2);}
+  .panel-head{background:#34377a!important;border-radius:18px 18px 0 0;}
+  .field,.img-field{border:0!important;padding-top:20px;padding-bottom:20px;}
+  .field:nth-of-type(odd){background:rgba(244,135,184,.09);}
+  select,input[type=text]{border:0!important;background:#fff;box-shadow:0 5px 16px rgba(52,55,122,.09);}
+  .chip-opt{border:0!important;background:#fff;box-shadow:0 3px 10px rgba(52,55,122,.08);}
+  .chip-opt.on{background:#f487b8!important;color:#34377a!important;}
+  .upload-btn{border:0!important;background:#35c5d2;color:#34377a;font-weight:800;}
+  .card{background:#fff;box-shadow:0 16px 38px rgba(0,0,0,.18);}
+  .card-top{background:#34377a;}
+  .card.active{border:0!important;box-shadow:0 0 0 4px #35c5d2,0 20px 48px rgba(0,0,0,.28);}
+  .card.active .card-top{background:#aa071b;}
+  .meta-row,.mock-head,.cta-row,.footer-note{border:0!important;}
+  .gallery-arrow{background:#35c5d2;color:#34377a;font-weight:900;}
+  .img-thumb{border:0!important;box-shadow:0 8px 22px rgba(0,0,0,.17);}
+  .img-thumb.selected{box-shadow:0 0 0 4px #f487b8,0 10px 25px rgba(0,0,0,.22);}
+  .generate-btn{border-radius:0;background:#aa071b;}
+  .masthead{border:0!important;box-shadow:none;}
+  /* Spectron: uitsluitend vier huiskleuren, wit en rechte hoeken */
+  :root{
+    --ink:#34377a;
+    --paper:#ffffff;
+    --paper-dim:#f487b8;
+    --signal:#35c5d2;
+    --forest:#aa071b;
+    --bordeaux:#aa071b;
+    --steel:#34377a;
+    --steel-line:#35c5d2;
+  }
+  *,*::before,*::after{border-radius:0!important;}
+  body,.masthead,.panel,.card,.img-adjust,.loading,.empty,.mock-social,.mock-google,.mock-linkedin{background:#fff;}
+  .panel,.card,.img-adjust,.masthead,.img-thumb,select,input,.chip-opt{box-shadow:none!important;}
+  .panel-head,.card-top{background:#34377a!important;color:#fff;}
+  .field:nth-of-type(odd){background:#fff;}
+  .field:nth-of-type(even),.img-field{background:#f487b8;}
+  .panel .usp-field{background:#f487b8!important;}
+  .panel .field:last-child{background:#f487b8!important;padding-top:12px!important;padding-bottom:26px!important;}
+  select,input[type=text],.chip-opt{background:#fff;color:#34377a;}
+  .chip-opt.on{background:#35c5d2!important;color:#34377a!important;}
+  .upload-btn{background:#35c5d2;color:#34377a;}
+  .generate-btn,.generate-btn:hover{background:#aa071b!important;color:#fff;box-shadow:none!important;}
+  .dl-all-btn,.dl-all-btn:hover{background:#34377a;border-color:#34377a;color:#fff;}
+  .card-dl-btn{background:#fff;border-color:#aa071b;color:#aa071b;}
+  .card-dl-btn:hover{background:#35c5d2;border-color:#35c5d2;color:#34377a;}
+  .cta-pill{background:#aa071b;border-color:#aa071b;color:#fff;}
+  .card.active{box-shadow:0 0 0 4px #35c5d2!important;}
+  .card.active .card-top{background:#aa071b!important;}
+  .img-thumb.selected{box-shadow:0 0 0 4px #35c5d2!important;}
+  .gallery-arrow{background:#35c5d2;color:#34377a;}
+  .mock-social .avatar,.mock-linkedin .li-head .avatar{background:#aa071b;}
+  .mock-social .canvas .scrim{background:rgba(52,55,122,.28)!important;}
+  .editable:hover,.editable:focus{background:rgba(244,135,184,.35);box-shadow:none;}
+  body *:not(.brandmark h1){font-family:'Inter',sans-serif!important;}
+  .brandmark h1{font-family:'Inter',sans-serif!important;font-weight:900;}
+  .masthead{padding:16px 0 18px;}
+  .brandmark{display:grid;grid-template-columns:340px minmax(0,1fr);gap:28px;width:100%;align-items:center;}
+  .brandmark .spectron-logo{justify-self:center;width:285px;}
+  .brandmark .divider{display:none;}
+  .brandmark>div:last-child{grid-column:2;justify-self:start;align-self:center;display:flex;align-items:center;transform:translateY(3px);}
+  @media(max-width:860px){
+    .brandmark{grid-template-columns:1fr;gap:16px;}
+    .brandmark>div:last-child{grid-column:1;justify-self:center;}
+  }
+  .card:not(.active) .editable{cursor:pointer;}
+  .mock-social,.mock-google,.mock-linkedin{max-width:none; width:100%;}
+  .mock-social.vertical{max-width:280px; margin:0 auto;}
+  .card-dl-row{flex-wrap:wrap; gap:6px;}
+  .card-dl-btn{flex:1; min-width:120px;}
+  @media (max-width:1120px){
+    .cards{grid-template-columns:1fr;}
+  }
+  @media (max-width:860px){
+    .wrap{padding:18px 16px 48px;}
+    .brandmark{align-items:flex-start;}
+    .brandmark .logo{width:150px;}
+    .brandmark .spectron-logo{max-width:100%;}
+    .grid{grid-template-columns:minmax(0,1fr);}
+    .grid > *{min-width:0;}
+    /* Keep the form and adjustment controls in page flow on mobile.
+       These overrides must follow the desktop sticky rules. */
+    .panel,.img-adjust{
+      position:static;
+      top:auto;
+      z-index:auto;
+    }
+    .img-adjust{
+      backdrop-filter:none;
+      -webkit-backdrop-filter:none;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="brandmark">
+      <img class="spectron-logo" src="spectron-logo.webp" alt="Spectron Toy Company">
+      <div class="divider"></div>
+      <div>
+        <h1>Social Studio</h1>
+      </div>
+    </div>
+  </div>
+  <div class="hazard"></div>
+
+  <div class="grid">
+
+    <!-- CONTROL PANEL -->
+    <div class="panel">
+      <div class="panel-head">
+        <span>SPEC SHEET</span>
+        <span id="stepIndicator">0/3 INGEVULD</span>
+      </div>
+
+      <div class="field">
+        <span class="field-num">STAP 01</span>
+        <label class="title" for="brand">Kies een merk</label>
+        <select id="brand">
+          <option value="">— kies eerst een merk —</option>
+          <option value="3Doodler">3Doodler</option><option value="MrBeast Lab">MrBeast Lab</option>
+          <option value="BeepBoop">BeepBoop</option><option value="Bing">Bing</option><option value="Bluey">Bluey</option>
+          <option value="Cookeez Makery">Cookeez Makery</option><option value="Exost">Exost</option>
+          <option value="Gear2Play">Gear2Play</option><option value="Gui Gui">Gui Gui</option><option value="IMC Toys">IMC Toys</option>
+          <option value="Kimmon">Kimmon</option><option value="Lamaze">Lamaze</option>
+          <option value="Little Live Pets">Little Live Pets</option><option value="Luvibubs">Luvibubs</option>
+          <option value="Make It Real">Make It Real</option><option value="Mama Surprise Families">Mama Surprise Families</option>
+          <option value="Peppa Pig">Peppa Pig</option><option value="Silverlit">Silverlit</option>
+          <option value="Smart Ball">Smart Ball</option><option value="Spinner Mad">Spinner Mad</option>
+          <option value="Stitch">Stitch</option><option value="The Amazing Digital Circus">The Amazing Digital Circus</option>
+          <option value="TOMY">TOMY</option><option value="YCOO">YCOO</option>
+        </select>
+        <p class="hint">De gekozen merkstem wordt gebruikt voor alle content.</p>
+      </div>
+
+      <div class="img-field">
+        <label class="title" style="font-size:15px;">Merkbeelden</label>
+        <div class="gallery-wrap">
+          <button type="button" class="gallery-arrow prev" onclick="scrollGallery(-1)" aria-label="Vorige beelden">‹</button>
+          <div class="img-gallery" id="imgGallery"></div>
+          <button type="button" class="gallery-arrow next" onclick="scrollGallery(1)" aria-label="Volgende beelden">›</button>
+        </div>
+        <label class="upload-btn">
+          <span class="icon">⤒</span> Eigen foto uploaden
+          <input type="file" id="uploadInput" accept="image/*">
+        </label>
+        <p class="img-hint">Upload een merk- of productbeeld voor de advertentie.</p>
+        <label class="upload-btn">
+          <span class="icon">＋</span> <span id="libraryUploadLabel">Fotobibliotheek van geselecteerd merk updaten</span>
+          <input type="file" id="libraryUploadInput" accept="image/*" multiple>
+        </label>
+      </div>
+
+      <div class="field">
+        <span class="field-num">STAP 02</span>
+        <label class="title">Platform &amp; toon</label>
+        <select id="platform" style="margin-bottom:10px;">
+          <option value="Instagram / Facebook post">Instagram / Facebook — feedpost</option>
+          <option value="Instagram / Facebook story">Instagram / Facebook — story</option>
+          <option value="Google Ads (zoekadvertentie)">Google Ads — zoekadvertentie</option>
+          <option value="TikTok">TikTok — verticale video</option>
+        </select>
+        <select id="format" style="margin-bottom:10px;" aria-label="Advertentieformaat"></select>
+        <select id="tone">
+          <option value="Enthousiast en speels">Toon: enthousiast &amp; speels</option>
+          <option value="Zakelijk en informatief">Toon: zakelijk &amp; informatief</option>
+          <option value="Urgent, actiegericht">Toon: urgent / actiegericht</option>
+          <option value="Nuchter en to-the-point (typisch NL)">Toon: nuchter &amp; to-the-point</option>
+        </select>
+      </div>
+
+      <div class="field usp-field">
+        <span class="field-num">STAP 03</span>
+        <label class="title">USP's om te benadrukken</label>
+        <div class="chips" id="uspChips">
+          <label class="chip-opt"><input type="checkbox" value="Veilig getest volgens EN71 keurmerk"> Veilig getest (EN71)</label>
+          <label class="chip-opt"><input type="checkbox" value="Innovatief ontwerp met WoW-effect"> Innovatief</label>
+          <label class="chip-opt"><input type="checkbox" value="Stimuleert fantasie en ontwikkeling"> Leerzaam spelen</label>
+          <label class="chip-opt"><input type="checkbox" value="Interactieve functies en verrassingen"> Interactief</label>
+          <label class="chip-opt"><input type="checkbox" value="Geschikt als cadeau"> Cadeautip</label>
+          <label class="chip-opt"><input type="checkbox" value="Populair en verzamelbaar"> Verzamelbaar</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="title" style="font-size:15px;">Actie / aanleiding <span style="color:var(--steel);font-weight:500;">(optioneel)</span></label>
+        <input type="text" id="promo" placeholder="bijv. Nieuwe collectie live, -20% deze week">
+      </div>
+
+      <input type="hidden" id="variantCount" value="4">
+
+      <div class="field" style="border-bottom:none; padding-top:6px;">
+        <button class="generate-btn" id="generateBtn" onclick="generateAds()">
+          Genereer advertentie <span class="arrow">→</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="output">
+      <div class="output-head">
+        <h2>Gegenereerde content</h2>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span id="outputMeta">nog niets gegenereerd</span>
+          <button id="downloadAllBtn" class="dl-all-btn" onclick="downloadAllVariants()" style="display:none;">↓ Download alles (.txt)</button>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--steel);margin:-8px 0 16px;">Klik in een kop, body of CTA hieronder om direct te bewerken — downloads gebruiken automatisch je aanpassingen.</p>
+
+      <div class="img-adjust" id="imgAdjust" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-family:'Nunito Sans',sans-serif; font-weight:900; font-size:14px; letter-spacing:.35px; text-transform:uppercase;">Beeld &amp; tekst aanpassen</span>
+          <button type="button" class="reset-btn" onclick="resetAllAdjust()">Reset alles</button>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;">
+          <div class="adj-row">
+            <label>Beeld — zoom <span id="zoomVal">100%</span></label>
+            <input type="range" id="zoomSlider" min="100" max="220" value="100" oninput="onImageAdjust()">
+          </div>
+          <div class="adj-row">
+            <label>Beeld — horizontaal</label>
+            <input type="range" id="posXSlider" min="0" max="100" value="50" oninput="onImageAdjust()">
+          </div>
+          <div class="adj-row">
+            <label>Beeld — verticaal</label>
+            <input type="range" id="posYSlider" min="0" max="100" value="50" oninput="onImageAdjust()">
+          </div>
+          <div class="adj-row">
+            <label>Tekstgrootte <span id="textVal">120%</span></label>
+            <input type="range" id="textSlider" min="70" max="180" value="120" oninput="onTextAdjust()">
+          </div>
+        </div>
+      </div>
+
+      <div id="resultsArea"></div>
+    </div>
+
+  </div>
+
+  <div class="footer-note">
+    <span>SPECTRON TOYS © 2026 — SOCIAL STUDIO</span>
+    <span>Tekst wordt per keer gegenereerd, controleer altijd op merk- en feitelijke juistheid vóór publicatie.</span>
+  </div>
+
+</div>
+
+<script src="embedded-assets.js"></script>
+<script>
+const embeddedAsset = path => (window.SPECTRON_EMBEDDED_ASSETS || {})[path] || path;
+const brandSet = slug => [1,2,3].map(i => embeddedAsset(`brand-images/${slug}-${i}.jpg`));
+const SPECTRON_LOGO_SRC = embeddedAsset("spectron-logo.webp");
+const BRAND_IMAGES = {
+  "3Doodler":brandSet("3doodler"), "MrBeast Lab":brandSet("beast-lab"),
+  "BeepBoop":brandSet("beepboop"), "Bing":brandSet("bing"), "Bluey":brandSet("bluey"),
+  "Cookeez Makery":brandSet("cookeez-makery"), "Exost":brandSet("exost"),
+  "Gear2Play":brandSet("gear2play"), "Gui Gui":brandSet("gui-gui"), "IMC Toys":brandSet("imc"),
+  "Kimmon":brandSet("kimmon"), "Lamaze":brandSet("lamaze"),
+  "Little Live Pets":brandSet("little-live-pets"), "Luvibubs":brandSet("luvibubs"),
+  "Make It Real":brandSet("make-it-real"), "Mama Surprise Families":brandSet("mamasurprisefamilies"),
+  "Peppa Pig":brandSet("peppa-pig"), "Silverlit":brandSet("silverlit"),
+  "Smart Ball":brandSet("smart-ball"), "Spinner Mad":brandSet("spinner-mad"),
+  "Stitch":brandSet("stitch"), "The Amazing Digital Circus":brandSet("theamazingdigitalcircus"),
+  "TOMY":brandSet("tomy"), "YCOO":brandSet("ycoo")
+};
+
+let currentVariants = [];
+let currentPlatform = "";
+let currentProduct = "";
+let currentBrand = "";
+let currentFormat = "";
+let currentLimits = null;
+let selectedVariantIndex = 0;
+let variantVisuals = [];
+
+function selectVariant(idx){
+  selectedVariantIndex = idx;
+  document.querySelectorAll('.card[data-variant-index]').forEach(card => {
+    const isActive = parseInt(card.dataset.variantIndex, 10) === idx;
+    card.classList.toggle('active', isActive);
+    card.querySelectorAll('.editable').forEach(el => {
+      el.contentEditable = isActive ? 'true' : 'false';
+    });
+  });
+  const settings = variantVisuals[idx];
+  if(settings){
+    imgScale = settings.imgScale;
+    imgPosX = settings.imgPosX;
+    imgPosY = settings.imgPosY;
+    textScale = settings.textScale;
+    document.getElementById('zoomSlider').value = Math.round(imgScale * 100);
+    document.getElementById('posXSlider').value = imgPosX;
+    document.getElementById('posYSlider').value = imgPosY;
+    document.getElementById('textSlider').value = Math.round(textScale * 100);
+    document.getElementById('zoomVal').textContent = Math.round(imgScale * 100) + '%';
+    document.getElementById('textVal').textContent = Math.round(textScale * 100) + '%';
+  }
+}
+
+function slugify(str){
+  return str.toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+const PLATFORM_FORMATS = {
+  "Instagram / Facebook post":[
+    {label:"Vierkant — 1080 × 1080",value:"1080x1080",width:1080,height:1080},
+    {label:"Staand — 1080 × 1350",value:"1080x1350",width:1080,height:1350},
+    {label:"Liggend — 1200 × 628",value:"1200x628",width:1200,height:628}
+  ],
+  "Instagram / Facebook story":[{label:"Story — 1080 × 1920",value:"1080x1920",width:1080,height:1920}],
+  "Google Ads (zoekadvertentie)":[{label:"Responsieve zoekadvertentie",value:"responsive",width:null,height:null}],
+  "TikTok":[{label:"Verticaal — 1080 × 1920",value:"1080x1920",width:1080,height:1920}]
+};
+
+function updateFormatOptions(){
+  const platform = document.getElementById('platform').value;
+  const select = document.getElementById('format');
+  const formats = PLATFORM_FORMATS[platform] || [];
+  select.innerHTML = formats.map(f => `<option value="${f.value}">${f.label}</option>`).join('');
+  select.disabled = formats.length < 2;
+}
+
+function getFormatSpec(platform=currentPlatform){
+  const value = document.getElementById('format').value;
+  return (PLATFORM_FORMATS[platform] || []).find(f => f.value === value) || (PLATFORM_FORMATS[platform] || [])[0] || {};
+}
+
+function exportLabel(platform, idx){
+  const format = getFormatSpec(platform);
+  const platformName = platform.replace(/\s*\(.*?\)\s*/g,'');
+  return `${platformName} ad ${format.value || ''} - variant ${idx + 1}`.trim();
+}
+
+function askExportName(suggested, extension){
+  const entered = window.prompt("Geef het bestand een naam:", suggested);
+  if(entered === null) return null;
+  const cleaned = entered.trim().replace(/[\\/:*?"<>|]+/g, "-");
+  if(!cleaned) return null;
+  return cleaned.toLowerCase().endsWith(`.${extension}`) ? cleaned : `${cleaned}.${extension}`;
+}
+
+function formatVariantText(v, idx, total, platform, product){
+  return [
+    currentBrand ? currentBrand.toUpperCase() : "SPECTRON TOYS",
+    `Platform: ${platform}`,
+    `Formaat: ${currentFormat || "responsief"}`,
+    `Product/collectie: ${product}`,
+    `Variant: ${idx + 1}/${total}`,
+    "",
+    "KOP:",
+    v.headline || "",
+    "",
+    "BODY:",
+    v.body || "",
+    "",
+    "CTA:",
+    v.cta || "",
+    "",
+    "HASHTAGS:",
+    (v.hashtags && v.hashtags.length) ? v.hashtags.map(h => "#" + h.replace(/^#/, "")).join(" ") : "—"
+  ].join("\n");
+}
+
+function triggerDownload(filename, text){
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function downloadVariant(idx){
+  const v = currentVariants[idx];
+  if(!v) return;
+  const text = formatVariantText(v, idx, currentVariants.length, currentPlatform, currentProduct);
+  const filename = askExportName(exportLabel(currentPlatform, idx), "txt");
+  if(!filename) return;
+  triggerDownload(filename, text);
+}
+
+function downloadAllVariants(){
+  if(!currentVariants.length) return;
+  const parts = currentVariants.map((v, idx) => formatVariantText(v, idx, currentVariants.length, currentPlatform, currentProduct));
+  const text = parts.join("\n\n" + "-".repeat(40) + "\n\n");
+  const filename = askExportName(`Spectron Toys - ${currentPlatform} - alle varianten`, "txt");
+  if(!filename) return;
+  triggerDownload(filename, text);
+}
+
+async function downloadCardImage(idx){
+  const cardVisual = document.getElementById(`cardVisual-${idx}`);
+  if(!cardVisual) return;
+  const node = cardVisual.querySelector('.canvas') || cardVisual.querySelector('.mock-google') || cardVisual;
+  const filename = askExportName(exportLabel(currentPlatform, idx), "png");
+  if(!filename) return;
+  const btn = document.getElementById(`imgBtn-${idx}`);
+  const originalLabel = btn ? btn.textContent : "";
+  if(btn){ btn.textContent = "Bezig…"; btn.disabled = true; }
+
+  // Temporarily point any remote images at a CORS-safe proxy so html2canvas can read pixels.
+  // Restored to the original (fast, direct) source right after capture.
+  const swappedStyles = [];
+  node.querySelectorAll('[style*="background-image"]').forEach(el=>{
+    const style = el.getAttribute('style') || '';
+    const match = style.match(/url\(['"]?(https?:\/\/[^'")]+)['"]?\)/);
+    if(match){
+      const original = style;
+      const proxied = style.split(match[1]).join(corsSafe(match[1]));
+      el.setAttribute('style', proxied);
+      swappedStyles.push({ el, original });
+    }
+  });
+
+  const swappedImgs = [];
+  const loadPromises = [];
+  node.querySelectorAll('img').forEach(img=>{
+    const src = img.getAttribute('src');
+    if(src && /^https?:\/\//i.test(src) && !src.startsWith(location.origin)){
+      swappedImgs.push({ img, original: src });
+      img.crossOrigin = 'anonymous';
+      loadPromises.push(new Promise(resolve => {
+        img.onload = resolve;
+        img.onerror = resolve;
+        setTimeout(resolve, 2500); // safety timeout
+      }));
+      img.src = corsSafe(src);
+    }else if(src){
+      loadPromises.push(new Promise(resolve => {
+        if(img.complete && img.naturalWidth > 0){ resolve(); return; }
+        img.addEventListener('load', resolve, { once:true });
+        img.addEventListener('error', resolve, { once:true });
+        setTimeout(resolve, 5000);
+      }));
+    }
+  });
+
+  try{
+    if(!window.html2canvas){
+      await new Promise((resolve, reject)=>{
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("Kon html2canvas niet laden"));
+        document.head.appendChild(script);
+      });
+    }
+    // Wait for every image, including local brand assets and the logo.
+    await Promise.all(loadPromises);
+    if(document.fonts && document.fonts.ready) await document.fonts.ready;
+    const canvas = await window.html2canvas(node, { backgroundColor: "#ffffff", scale: 2, useCORS: true, allowTaint: false });
+    const format = getFormatSpec(currentPlatform);
+    let exportCanvas = canvas;
+    if(format.width && format.height){
+      exportCanvas = document.createElement('canvas');
+      exportCanvas.width = format.width;
+      exportCanvas.height = format.height;
+      const exportCtx = exportCanvas.getContext('2d');
+      exportCtx.fillStyle = '#fff';
+      exportCtx.fillRect(0,0,format.width,format.height);
+      exportCtx.drawImage(canvas,0,0,format.width,format.height);
+    }
+    exportCanvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  }catch(e){
+    alert("Afbeelding downloaden lukte niet (mogelijk door het extern productbeeld). Gebruik anders de tekst-download of maak een schermafbeelding.");
+  }finally{
+    swappedStyles.forEach(({ el, original }) => el.setAttribute('style', original));
+    swappedImgs.forEach(({ img, original }) => { img.removeAttribute('crossorigin'); img.src = original; });
+    if(btn){ btn.textContent = originalLabel; btn.disabled = false; }
+  }
+}
+
+function loadCanvasImage(src){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    if(/^https?:\/\//i.test(src) && !src.startsWith(location.origin)) img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("Afbeelding kon niet worden geladen"));
+    img.src = src.startsWith("data:") ? src : corsSafe(src);
+  });
+}
+
+function drawCoverImage(ctx, img, width, height, scale, posX, posY){
+  const baseScale = Math.max(width / img.naturalWidth, height / img.naturalHeight);
+  const drawWidth = img.naturalWidth * baseScale * scale;
+  const drawHeight = img.naturalHeight * baseScale * scale;
+  const x = (width - drawWidth) * (posX / 100);
+  const y = (height - drawHeight) * (posY / 100);
+  ctx.drawImage(img, x, y, drawWidth, drawHeight);
+}
+
+function wrapCanvasText(ctx, text, maxWidth){
+  const words = String(text || "").split(/\s+/).filter(Boolean);
+  const lines = [];
+  let line = "";
+  words.forEach(word => {
+    const test = line ? line + " " + word : word;
+    if(line && ctx.measureText(test).width > maxWidth){
+      lines.push(line);
+      line = word;
+    }else{
+      line = test;
+    }
+  });
+  if(line) lines.push(line);
+  return lines.slice(0, 4);
+}
+
+async function downloadTikTokVideo(idx){
+  if(!selectedImage){
+    alert("Kies eerst een productbeeld voor de TikTok-video.");
+    return;
+  }
+  if(!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream){
+    alert("Deze browser ondersteunt video-export niet. Open de tool in Chrome of Edge.");
+    return;
+  }
+  const preferredExtension = MediaRecorder.isTypeSupported("video/mp4;codecs=avc1") ? "mp4" : "webm";
+  const filename = askExportName(exportLabel("TikTok", idx), preferredExtension);
+  if(!filename) return;
+
+  const btn = document.getElementById(`videoBtn-${idx}`);
+  const originalLabel = btn ? btn.textContent : "";
+  if(btn){ btn.textContent = "Video maken…"; btn.disabled = true; }
+
+  try{
+    const [photo, logo] = await Promise.all([
+      loadCanvasImage(selectedImage),
+      loadCanvasImage(SPECTRON_LOGO_SRC)
+    ]);
+    const canvas = document.createElement("canvas");
+    canvas.width = 540;
+    canvas.height = 960;
+    const ctx = canvas.getContext("2d");
+    const stream = canvas.captureStream(30);
+    const mimeCandidates = ["video/mp4;codecs=avc1", "video/webm;codecs=vp9", "video/webm"];
+    const mimeType = mimeCandidates.find(type => MediaRecorder.isTypeSupported(type)) || "";
+    const recorder = new MediaRecorder(stream, mimeType ? { mimeType, videoBitsPerSecond: 6000000 } : undefined);
+    const chunks = [];
+    recorder.ondataavailable = event => { if(event.data.size) chunks.push(event.data); };
+
+    const finished = new Promise(resolve => { recorder.onstop = resolve; });
+    recorder.start(250);
+    const duration = 6000;
+    const started = performance.now();
+    const variant = currentVariants[idx] || {};
+
+    await new Promise(resolve => {
+      function frame(now){
+        const progress = Math.min(1, (now - started) / duration);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const motionScale = Math.max(1, imgScale) * (1 + progress * .08);
+        drawCoverImage(ctx, photo, canvas.width, canvas.height, motionScale, imgPosX, imgPosY);
+
+        const gradient = ctx.createLinearGradient(0, canvas.height * .4, 0, canvas.height);
+        gradient.addColorStop(0, "rgba(0,0,0,0)");
+        gradient.addColorStop(.55, "rgba(0,0,0,.14)");
+        gradient.addColorStop(1, "rgba(0,0,0,.72)");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const logoWidth = 170;
+        const logoHeight = logoWidth * (logo.naturalHeight / logo.naturalWidth);
+        ctx.drawImage(logo, canvas.width - logoWidth - 28, 28, logoWidth, logoHeight);
+
+        ctx.fillStyle = "#fff";
+        ctx.font = `900 ${Math.round(52 * textScale)}px 'Inter', sans-serif`;
+        ctx.textBaseline = "bottom";
+        const lines = wrapCanvasText(ctx, variant.headline || "", canvas.width - 68);
+        const lineHeight = Math.round(60 * textScale);
+        const bottom = canvas.height - 64;
+        lines.forEach((line, lineIdx) => {
+          const y = bottom - (lines.length - 1 - lineIdx) * lineHeight;
+          ctx.fillText(line, 34, y);
+        });
+
+        if(progress < 1){ requestAnimationFrame(frame); }
+        else{ resolve(); }
+      }
+      requestAnimationFrame(frame);
+    });
+
+    recorder.stop();
+    await finished;
+    const outputType = mimeType.startsWith("video/mp4") ? "video/mp4" : "video/webm";
+    const extension = outputType === "video/mp4" ? "mp4" : "webm";
+    const blob = new Blob(chunks, { type: outputType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename.replace(/\.(mp4|webm)$/i, `.${extension}`);
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }catch(error){
+    alert("De TikTok-video kon niet worden gemaakt. Probeer een eigen geüploade foto of open de tool via de online versie.");
+  }finally{
+    if(btn){ btn.textContent = originalLabel; btn.disabled = false; }
+  }
+}
+
+let uploadedImages = [];
+const uploadedLibraryImages = {};
+let selectedImage = null;
+let imgScale = 1;
+let imgPosX = 50;
+let imgPosY = 50;
+let textScale = 1.2;
+
+const TEXT_BASE_SIZES = {
+  ".headline-on-image": 26
+};
+
+function onImageAdjust(){
+  imgScale = document.getElementById('zoomSlider').value / 100;
+  imgPosX = parseInt(document.getElementById('posXSlider').value, 10);
+  imgPosY = parseInt(document.getElementById('posYSlider').value, 10);
+  document.getElementById('zoomVal').textContent = Math.round(imgScale * 100) + '%';
+  if(variantVisuals[selectedVariantIndex]){
+    Object.assign(variantVisuals[selectedVariantIndex], { imgScale, imgPosX, imgPosY });
+  }
+  applyImageTransform();
+}
+
+function applyImageTransform(){
+  const translateX = (50 - imgPosX) * (imgScale - 1);
+  const translateY = (50 - imgPosY) * (imgScale - 1);
+  document.querySelectorAll(`.card[data-variant-index="${selectedVariantIndex}"] .product-img`).forEach(img => {
+    img.style.transform = `translate(${translateX}%, ${translateY}%) scale(${imgScale})`;
+    img.style.transformOrigin = `center center`;
+    img.style.objectPosition = `${imgPosX}% ${imgPosY}%`;
+  });
+}
+
+function onTextAdjust(){
+  textScale = document.getElementById('textSlider').value / 100;
+  document.getElementById('textVal').textContent = Math.round(textScale * 100) + '%';
+  if(variantVisuals[selectedVariantIndex]){
+    variantVisuals[selectedVariantIndex].textScale = textScale;
+  }
+  applyTextScale();
+}
+
+function applyTextScale(){
+  Object.entries(TEXT_BASE_SIZES).forEach(([selector, base]) => {
+    document.querySelectorAll(`.card[data-variant-index="${selectedVariantIndex}"] ${selector}`).forEach(el => {
+      el.style.fontSize = (base * textScale) + 'px';
+    });
+  });
+}
+
+function resetImageAdjust(){
+  document.getElementById('zoomSlider').value = 100;
+  document.getElementById('posXSlider').value = 50;
+  document.getElementById('posYSlider').value = 50;
+  onImageAdjust();
+}
+
+function resetTextAdjust(){
+  document.getElementById('textSlider').value = 120;
+  onTextAdjust();
+}
+
+function resetAllAdjust(){
+  resetImageAdjust();
+  resetTextAdjust();
+}
+
+function corsSafe(url){
+  if(!url) return url;
+  if(url.startsWith("data:") || !/^https?:\/\//i.test(url)) return url;
+  return "https://images.weserv.nl/?url=" + url.replace(/^https?:\/\//, "");
+}
+
+function renderImageGallery(){
+  const brand = document.getElementById('brand').value;
+  const gallery = document.getElementById('imgGallery');
+  const defaults = brand ? (BRAND_IMAGES[brand] || []) : [];
+  const brandUploads = brand ? (uploadedLibraryImages[brand] || []) : [];
+  const all = [...uploadedImages, ...brandUploads, ...defaults];
+
+  if(!all.length){
+    gallery.innerHTML = ``;
+    selectedImage = null;
+    return;
+  }
+
+  if(!selectedImage || !all.includes(selectedImage)){
+    selectedImage = all[0];
+  }
+
+  gallery.innerHTML = all.map((src, i) => `
+    <div class="img-thumb ${src === selectedImage ? 'selected' : ''}" data-src="${escapeHtml(src)}" onclick="selectImage('${escapeHtml(src).replace(/'/g,"\\'")}')">
+      <img src="${escapeHtml(src)}" alt="Productbeeld ${i+1}" loading="lazy" onerror="this.parentElement.classList.add('loading-thumb'); this.parentElement.innerHTML='geen preview';">
+    </div>
+  `).join('');
+}
+
+function scrollGallery(direction){
+  const gallery = document.getElementById('imgGallery');
+  gallery.scrollBy({left: direction * Math.max(260, gallery.clientWidth * .78), behavior:'smooth'});
+}
+
+function selectImage(src){
+  selectedImage = src;
+  renderImageGallery();
+  document.querySelectorAll('.product-img').forEach(img => { img.src = src; });
+  variantVisuals.forEach((settings, idx) => {
+    document.querySelectorAll(`.card[data-variant-index="${idx}"] .product-img`).forEach(img => {
+      img.style.transform = `scale(${settings.imgScale})`;
+      img.style.transformOrigin = `${settings.imgPosX}% ${settings.imgPosY}%`;
+      img.style.objectPosition = `${settings.imgPosX}% ${settings.imgPosY}%`;
+    });
+  });
+}
+
+document.getElementById('uploadInput').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    uploadedImages.unshift(ev.target.result);
+    selectedImage = ev.target.result;
+    renderImageGallery();
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+document.getElementById('libraryUploadInput').addEventListener('change', function(e){
+  const brand = document.getElementById('brand').value;
+  if(!brand){
+    alert('Kies eerst een merk in stap 01.');
+    e.target.value = '';
+    return;
+  }
+  const files = Array.from(e.target.files || []);
+  if(!files.length) return;
+  Promise.all(files.map(file => new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = ev => resolve(ev.target.result);
+    reader.readAsDataURL(file);
+  }))).then(images => {
+    if(!uploadedLibraryImages[brand]) uploadedLibraryImages[brand] = [];
+    uploadedLibraryImages[brand].unshift(...images);
+    renderImageGallery();
+  });
+  e.target.value = '';
+});
+
+const USP_LABELS = {
+  "Veilig getest volgens EN71 keurmerk": "veilig getest volgens het EN71 keurmerk",
+  "Innovatief ontwerp met WoW-effect": "ontworpen met een innovatief WoW-effect",
+  "Stimuleert fantasie en ontwikkeling": "gemaakt om fantasie en ontwikkeling te stimuleren",
+  "Interactieve functies en verrassingen": "voorzien van interactieve functies en verrassingen",
+  "Geschikt als cadeau": "een aantrekkelijke cadeautip",
+  "Populair en verzamelbaar": "populair en verzamelbaar"
+};
+
+const HEADLINE_TEMPLATES = {
+  "Enthousiast en speels": [
+    p => `${p.product}? Nooit meer zonder.`,
+    p => `Klaar voor de stad: ${p.productLower}`,
+    p => `${p.promo || "Nieuw"}: ontdek ${p.productLower}`
+  ],
+  "Zakelijk en informatief": [
+    p => `${p.product} — ontworpen voor dagelijks gebruik`,
+    p => `${p.product}: duurzaam en praktisch`,
+    p => `${p.brand} ${p.productLower}`
+  ],
+  "Urgent, actiegericht": [
+    p => `${p.promo || "Nu beschikbaar"}: ${p.productLower}`,
+    p => `Mis het niet — ${p.productLower}`,
+    p => `Laatste kans: ${p.promo || p.productLower}`
+  ],
+  "Nuchter en to-the-point (typisch NL)": [
+    p => `${p.product}. Gewoon goed.`,
+    p => `${p.product} doet wat het moet doen`,
+    p => `${p.product} — geen poespas`
+  ]
+};
+
+const BODY_TEMPLATES = {
+  "Enthousiast en speels": [
+    p => `Zin in de stad zonder gedoe? ${p.product} is ${p.uspSentence}. Gebouwd om jaren mee te gaan.${p.promoLine}`,
+    p => `Deze ${p.productLower} maakt fietsen net iets makkelijker. ${p.uspSentenceCap}.${p.promoLine} Voel je vrij, elke rit.`
+  ],
+  "Zakelijk en informatief": [
+    p => `${p.product} is ${p.uspSentence}. Ontworpen voor de dagelijkse fietser die kwaliteit en duurzaamheid combineert.${p.promoLine}`,
+    p => `${p.brand} brengt ${p.productLower} tot leven: ${p.uspSentence}.${p.promoLine}`
+  ],
+  "Urgent, actiegericht": [
+    p => `${p.promo ? p.promo + '. ' : ''}${p.product}, ${p.uspSentence} — nu van ${p.brand}. Wacht niet te lang.`,
+    p => `Nog even en je hebt hem gemist: ${p.productLower}, ${p.uspSentence}.${p.promoLine} Bekijk hem nu.`
+  ],
+  "Nuchter en to-the-point (typisch NL)": [
+    p => `${p.product}. ${p.uspSentenceCap}.${p.promoLine} Klaar. Zo simpel is het.`,
+    p => `${p.uspSentenceCap}. Verder geen verhaal nodig over deze ${p.productLower}.${p.promoLine}`
+  ]
+};
+
+const CTA_BY_PLATFORM = {
+  "Instagram / Facebook post": ["Shop nu", "Ontdek meer"],
+  "Instagram / Facebook story": ["Swipe up", "Shop nu"],
+  "Google Ads (zoekadvertentie)": ["Bekijk nu", "Shop online"],
+  "TikTok": ["Shop nu", "Ontdek meer"]
+};
+
+function truncate(str, max){
+  if(str.length <= max) return str;
+  const shortened = str.slice(0, max - 1).trim();
+  const lastSpace = shortened.lastIndexOf(" ");
+  return (lastSpace > 0 ? shortened.slice(0, lastSpace) : shortened) + "…";
+}
+
+function generateOffline(brand, product, platform, tone, usps, promo, count){
+  const limits = PLATFORM_LIMITS[platform];
+  const productLower = product.replace(/\s*\(.*?\)\s*/g, "").toLowerCase();
+  const productClean = product.replace(/\s*\(.*?\)\s*/g, "");
+  const uspPhrases = usps.length ? usps.map(u => USP_LABELS[u] || u) : ["ontworpen om te koesteren"];
+  const uspSentence = uspPhrases.length > 1
+    ? uspPhrases.slice(0, -1).join(", ") + " en " + uspPhrases.slice(-1)
+    : uspPhrases[0];
+  const uspSentenceCap = uspSentence.charAt(0).toUpperCase() + uspSentence.slice(1);
+  const promoLine = promo ? ` ${promo}.` : "";
+
+  const p = { brand, product: productClean, productLower, uspSentence, uspSentenceCap, promoLine, promo };
+  const hTemplates = HEADLINE_TEMPLATES[tone] || HEADLINE_TEMPLATES["Zakelijk en informatief"];
+  const bTemplates = BODY_TEMPLATES[tone] || BODY_TEMPLATES["Zakelijk en informatief"];
+  const ctas = CTA_BY_PLATFORM[platform] || ["Bekijk nu"];
+  const baseHashtags = ["spectrontoys", brand.replace(/[^a-z0-9]/gi, ""), productLower.split(" ")[0].replace(/[^a-z0-9]/gi, "")];
+
+  const variants = [];
+  for(let i = 0; i < count; i++){
+    const headline = truncate(hTemplates[i % hTemplates.length](p), limits.headline);
+    const body = truncate(bTemplates[i % bTemplates.length](p), limits.body);
+    const cta = ctas[i % ctas.length];
+    const hashtags = limits.hasHashtags ? baseHashtags : [];
+    variants.push({ headline, body, cta, hashtags });
+  }
+  return variants;
+}
+
+const PLATFORM_LIMITS = {
+  "Instagram / Facebook post": { headline: 60, body: 220, hasHashtags:true, mock:"social" },
+  "Instagram / Facebook story": { headline: 45, body: 90, hasHashtags:false, mock:"social" },
+  "Google Ads (zoekadvertentie)": { headline: 30, body: 90, hasHashtags:false, mock:"google" },
+  "TikTok": { headline: 60, body: 100, hasHashtags:true, mock:"social" }
+};
+
+function toggleChip(el){
+  const cb = el.querySelector('input');
+  cb.checked = !cb.checked;
+  el.classList.toggle('on', cb.checked);
+}
+document.querySelectorAll('.chip-opt').forEach(el=>{
+  el.addEventListener('click', (e)=>{
+    e.preventDefault();
+    toggleChip(el);
+  });
+});
+
+function getSelectedUSPs(){
+  return Array.from(document.querySelectorAll('#uspChips input:checked')).map(i=>i.value);
+}
+
+function escapeHtml(str){
+  return String(str)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
+
+async function generateAds(){
+  const brand = document.getElementById('brand').value;
+  const product = brand ? `${brand} collectie` : "";
+  const platform = document.getElementById('platform').value;
+  const format = getFormatSpec(platform);
+  const tone = document.getElementById('tone').value;
+  const usps = getSelectedUSPs();
+  const promo = document.getElementById('promo').value.trim();
+  const count = parseInt(document.getElementById('variantCount').value, 10);
+  const btn = document.getElementById('generateBtn');
+  const resultsArea = document.getElementById('resultsArea');
+  const outputMeta = document.getElementById('outputMeta');
+
+  if(!brand){
+    resultsArea.innerHTML = `<div class="empty selection-prompt"><p>Kies eerst een merk in stap 01.</p></div>`;
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = 'Bezig met genereren…';
+  document.getElementById('downloadAllBtn').style.display = 'none';
+  document.getElementById('imgAdjust').style.display = 'none';
+  resultsArea.innerHTML = `
+    <div class="loading">
+      <p>SCHRIJFT ${count} VARIANT${count>1?'EN':''} VOOR "${escapeHtml(platform.toUpperCase())}"…</p>
+      <div class="bar"></div>
+    </div>`;
+
+  const limits = PLATFORM_LIMITS[platform];
+
+  const systemPrompt = `Je bent social copywriter voor Spectron Toys, een Nederlandse speelgoedleverancier en distributeur sinds 1982. Schrijf voor het geselecteerde speelgoedmerk "${brand}". Respecteer de eigen merkwereld, doelgroep en tone of voice van dit merk. Spectrons overkoepelende waarden zijn kwalitatief, innovatief en leerzaam speelgoed met plezier, fantasie en een WoW-effect. Verzin geen productclaims, prijzen, keurmerken, licenties of eigenschappen die niet in de briefing staan.
+
+Schrijf ${count} duidelijk verschillende advertentievariant(en) in het Nederlands voor het platform "${platform}" en formaat "${format.label}", voor merk "${brand}" en producttype "${product}".
+Toon: ${tone}.
+${usps.length ? "Benadruk deze USP's waar relevant: " + usps.join(', ') + "." : ""}
+${promo ? "Verwerk deze actie/aanleiding: " + promo + "." : ""}
+
+Richtlijnen per platform:
+- Instagram/Facebook post: korte warme kop (max ${limits.headline} tekens), body/caption (max ${limits.body} tekens), CTA-knoptekst (2-4 woorden), en 3-5 relevante hashtags in het Nederlands of Engels.
+- Instagram/Facebook story: zeer korte kop (max ${limits.headline} tekens), minimale body (max ${limits.body} tekens), CTA-knoptekst.
+- Google Ads: kop (max ${limits.headline} tekens, STRIKT), beschrijving (max ${limits.body} tekens, STRIKT), CTA-knoptekst kort (bijv. "Bekijk nu").
+- TikTok: pakkende, speelse kop (max ${limits.headline} tekens), korte caption (max ${limits.body} tekens), CTA-knoptekst en 3-5 relevante hashtags. Schrijf natuurlijk en warm, zonder geforceerde straattaal.
+
+Antwoord UITSLUITEND met geldige JSON, geen markdown, geen uitleg, geen backticks. Formaat:
+{"variants":[{"headline":"...","body":"...","cta":"...","hashtags":["...","..."]}]}
+Als hashtags niet van toepassing zijn voor dit platform, geef een lege array terug.`;
+
+  try{
+    const response = await fetch("/.netlify/functions/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: systemPrompt
+      })
+    });
+
+    if(!response.ok){
+      throw new Error("API request mislukt (" + response.status + ")");
+    }
+
+    const data = await response.json();
+    const text = (data.candidates?.[0]?.content?.parts || [])
+      .filter(part => !part.thought && typeof part.text === "string")
+      .map(part => part.text)
+      .join("");
+    if(!text.trim()){
+      throw new Error("Geen tekstantwoord ontvangen.");
+    }
+    let clean = text.replace(/```json|```/g, "").trim();
+    let parsed;
+    try{
+      parsed = JSON.parse(clean);
+    }catch(e){
+      const match = clean.match(/\{[\s\S]*\}/);
+      if(match){ parsed = JSON.parse(match[0]); }
+      else{ throw new Error("Kon het antwoord niet interpreteren als JSON."); }
+    }
+
+    currentBrand = brand;
+    renderResults(parsed.variants || [], platform, product, false);
+    outputMeta.textContent = `${(parsed.variants||[]).length} variant(en) · ${platform}`;
+
+  }catch(err){
+    // Live AI-generatie niet bereikbaar (bv. tool lokaal geopend zonder Netlify) — val terug op ingebouwde generator
+    try{
+      const offlineVariants = generateOffline(brand, product, platform, tone, usps, promo, count);
+      currentBrand = brand;
+      renderResults(offlineVariants, platform, product, true);
+      outputMeta.textContent = `${offlineVariants.length} variant(en) · ${platform} · offline modus`;
+    }catch(fallbackErr){
+      resultsArea.innerHTML = `<div class="error-box"><b>Er ging iets mis:</b> ${escapeHtml(err.message)}. Probeer het opnieuw.</div>`;
+      outputMeta.textContent = "mislukt";
+    }
+  }finally{
+    btn.disabled = false;
+    btn.innerHTML = 'Genereer advertentie <span class="arrow">→</span>';
+  }
+}
+
+function renderResults(variants, platform, product, isOffline){
+  const resultsArea = document.getElementById('resultsArea');
+  const limits = PLATFORM_LIMITS[platform];
+  const brand = document.getElementById('brand').value;
+  const brandHandle = brand.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  const format = getFormatSpec(platform);
+  const canvasRatio = format.width && format.height ? `${format.width}/${format.height}` : '1/1';
+
+  if(!variants.length){
+    resultsArea.innerHTML = `<div class="error-box">Geen varianten ontvangen. Probeer opnieuw te genereren.</div>`;
+    return;
+  }
+
+  let html = "";
+  if(isOffline){
+    html += `<div class="error-box" style="border-color:var(--forest);background:#EEF3EE;color:var(--forest);margin-bottom:16px;">
+      <b>Lokale modus:</b> de live AI-verbinding is niet beschikbaar in deze losse versie van de tool. Daarom zijn deze teksten gemaakt met de ingebouwde tekstgenerator. Je kunt ze hieronder direct aanpassen.
+    </div>`;
+  }
+  html += `<div class="cards">`;
+
+  variants.forEach((v, idx)=>{
+    const headline = v.headline || "";
+    const body = v.body || "";
+    const cta = v.cta || "Bekijk nu";
+    const hashtags = Array.isArray(v.hashtags) ? v.hashtags : [];
+
+    const hOver = headline.length > limits.headline;
+    const bOver = body.length > limits.body;
+
+    let mockHtml = "";
+    if(limits.mock === "social"){
+      const isVerticalSocial = platform === "Instagram / Facebook story" || platform === "TikTok";
+      mockHtml = `
+        <div class="mock-social${isVerticalSocial ? ' vertical' : ''}">
+          <div class="mock-head">
+            <div class="avatar"></div>
+            <span class="handle">${escapeHtml(brandHandle)}</span>
+          </div>
+          <div class="canvas${isVerticalSocial ? ' vertical-canvas' : ''}" style="aspect-ratio:${canvasRatio}">
+            ${selectedImage ? `<img class="product-img" src="${selectedImage.replace(/"/g,'&quot;')}" style="transform:scale(${imgScale});transform-origin:${imgPosX}% ${imgPosY}%;object-position:${imgPosX}% ${imgPosY}%;" alt="">` : ''}
+            ${selectedImage ? `<div class="scrim"></div>` : ''}
+            <img class="ad-logo spectron-ad-logo" src="${SPECTRON_LOGO_SRC}" alt="Spectron Toy Company">
+            <div class="headline-on-image editable" contenteditable="true" data-idx="${idx}" data-field="headline" oninput="onEdit(this)">${escapeHtml(headline)}</div>
+          </div>
+          <div class="caption"><b>${escapeHtml(brandHandle)}</b> <span class="editable" contenteditable="true" data-idx="${idx}" data-field="body" oninput="onEdit(this)">${escapeHtml(body)}</span></div>
+          <div class="hashtags editable" contenteditable="true" data-idx="${idx}" data-field="hashtags" oninput="onEdit(this)">${hashtags.length ? hashtags.map(h=>'#'+h.replace(/^#/,'')).join(' ') : ''}</div>
+          <div class="cta-row"><span class="cta-pill editable" contenteditable="true" data-idx="${idx}" data-field="cta" oninput="onEdit(this)">${escapeHtml(cta)}</span></div>
+        </div>`;
+    } else if(limits.mock === "google"){
+      mockHtml = `
+        <div class="mock-google">
+          <span class="ad-tag">Advertentie</span><span class="url">spectrontoys.com</span>
+          <div class="g-headline editable" contenteditable="true" data-idx="${idx}" data-field="headline" oninput="onEdit(this)">${escapeHtml(headline)}</div>
+          <div class="g-desc editable" contenteditable="true" data-idx="${idx}" data-field="body" oninput="onEdit(this)">${escapeHtml(body)}</div>
+        </div>
+        ${selectedImage ? `
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--steel-line);">
+          <div style="width:44px;height:44px;flex:none;background-image:url('${selectedImage.replace(/'/g,"\\'")}');background-size:cover;background-position:center;border:1px solid var(--steel-line);"></div>
+          <span style="font-size:11px;color:var(--steel);line-height:1.4;">Gekoppeld productbeeld — zoekadvertenties zelf tonen geen beeld, maar gebruik dit voor Performance Max / Display-varianten.</span>
+        </div>` : ''}` ;
+    } else if(limits.mock === "linkedin"){
+      mockHtml = `
+        <div class="mock-linkedin">
+          <div class="li-head">
+            <div class="avatar"></div>
+            <div>
+              <div class="li-name">Spectron Toys</div>
+              <div class="li-sub">Enjoy the little things · Baby- en kinderproducten</div>
+            </div>
+          </div>
+          <div class="li-body"><b class="editable" contenteditable="true" data-idx="${idx}" data-field="headline" oninput="onEdit(this)">${escapeHtml(headline)}</b><br><span class="editable" contenteditable="true" data-idx="${idx}" data-field="body" oninput="onEdit(this)">${escapeHtml(body)}</span></div>
+          ${selectedImage ? `<div style="aspect-ratio:1.9/1;position:relative;overflow:hidden;border-top:1px solid var(--steel-line);"><img class="product-img" src="${selectedImage.replace(/"/g,'&quot;')}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(${imgScale});transform-origin:${imgPosX}% ${imgPosY}%;object-position:${imgPosX}% ${imgPosY}%;" alt=""></div>` : ''}
+          <div class="li-cta"><span class="editable" contenteditable="true" data-idx="${idx}" data-field="cta" oninput="onEdit(this)">${escapeHtml(cta)}</span><span>→</span></div>
+        </div>`;
+    }
+
+    html += `
+      <div class="card${idx === 0 ? ' active' : ''}" data-variant-index="${idx}" onclick="selectVariant(${idx})">
+        <div class="card-top">
+          <span class="variant">VARIANT ${String(idx+1).padStart(2,'0')} / ${String(variants.length).padStart(2,'0')}</span>
+          <span class="platform-tag">${escapeHtml(platform)}</span>
+        </div>
+        <div class="card-body">
+          <div id="cardVisual-${idx}">
+          ${mockHtml}
+          </div>
+          <div class="meta-row">
+            <span class="meta-item ${hOver?'over-limit':''}" id="hcount-${idx}"><b>${headline.length}</b>/${limits.headline} tekens — kop</span>
+            <span class="meta-item ${bOver?'over-limit':''}" id="bcount-${idx}"><b>${body.length}</b>/${limits.body} tekens — body</span>
+            <span class="meta-item">merk: <b>${escapeHtml(brand)}</b> · product: <b>${escapeHtml(product)}</b></span>
+          </div>
+          <div class="card-dl-row">
+            <button class="card-dl-btn" onclick="downloadVariant(${idx})">↓ Tekst (.txt)</button>
+            <button class="card-dl-btn" id="imgBtn-${idx}" onclick="downloadCardImage(${idx})">↓ Afbeelding (.png)</button>
+            ${platform === "TikTok" ? `<button class="card-dl-btn" id="videoBtn-${idx}" onclick="downloadTikTokVideo(${idx})">▶ Video (6 sec)</button>` : ''}
+          </div>
+        </div>
+      </div>`;
+  });
+
+  html += `</div>`;
+  resultsArea.innerHTML = html;
+  document.getElementById('imgAdjust').style.display = variants.length ? 'block' : 'none';
+  currentVariants = variants;
+  currentPlatform = platform;
+  currentProduct = product;
+  currentFormat = format.value || "responsive";
+  currentLimits = limits;
+  variantVisuals = variants.map(() => ({
+    imgScale:1,
+    imgPosX:50,
+    imgPosY:50,
+    textScale:1.2
+  }));
+  selectVariant(0);
+  applyImageTransform();
+  applyTextScale();
+  document.getElementById('downloadAllBtn').style.display = variants.length ? 'inline-block' : 'none';
+}
+
+function onEdit(el){
+  const idx = parseInt(el.getAttribute('data-idx'), 10);
+  const field = el.getAttribute('data-field');
+  const v = currentVariants[idx];
+  if(!v) return;
+
+  if(field === "hashtags"){
+    v.hashtags = el.textContent.split(/\s+/).map(t => t.replace(/^#/, "").trim()).filter(Boolean);
+    return;
+  }
+
+  v[field] = el.textContent;
+
+  if(field === "headline" || field === "body"){
+    const limits = currentLimits;
+    const countEl = document.getElementById((field === "headline" ? "hcount-" : "bcount-") + idx);
+    if(countEl && limits){
+      const max = field === "headline" ? limits.headline : limits.body;
+      const len = v[field].length;
+      countEl.innerHTML = `<b>${len}</b>/${max} tekens — ${field === "headline" ? "kop" : "body"}`;
+      countEl.classList.toggle("over-limit", len > max);
+    }
+  }
+}
+
+// step indicator
+function updateStepIndicator(){
+  let done = 0;
+  if(document.getElementById('brand').value) done++;
+  if(document.getElementById('platform').value) done++;
+  if(getSelectedUSPs().length) done++;
+  document.getElementById('stepIndicator').textContent = done + "/3 INGEVULD";
+}
+document.getElementById('brand').addEventListener('change', ()=>{
+  selectedImage = null;
+  updateStepIndicator();
+  renderImageGallery();
+  const brand = document.getElementById('brand').value;
+  document.getElementById('libraryUploadLabel').textContent = brand
+    ? `Fotobibliotheek van ${brand} updaten`
+    : 'Fotobibliotheek van geselecteerd merk updaten';
+});
+document.getElementById('platform').addEventListener('change', ()=>{ updateFormatOptions(); updateStepIndicator(); });
+document.getElementById('format').addEventListener('change', ()=>{ if(currentVariants.length) renderResults(currentVariants,currentPlatform,currentProduct,false); });
+document.getElementById('uspChips').addEventListener('click', ()=> setTimeout(updateStepIndicator, 0));
+updateStepIndicator();
+updateFormatOptions();
+renderImageGallery();
+</script>
+</body>
+</html>

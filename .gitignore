@@ -1,0 +1,7 @@
+# Local environment files can contain secrets.
+.env
+.env.*
+!.env.example
+
+# Local Netlify folder
+.netlify
