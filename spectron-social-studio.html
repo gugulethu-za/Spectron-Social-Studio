@@ -321,9 +321,16 @@
   .img-adjust label span{color:var(--forest);}
   .img-adjust input[type=range]{
     width:100%;
+    min-width:0;
     accent-color:var(--forest);
-    height:18px;
+    height:44px;
+    margin:0;
+    touch-action:pan-y;
   }
+  .adjustment-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;}
+  .adjustment-grid .adj-row{min-width:0;}
+  @media(max-width:860px){.adjustment-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  @media(max-width:480px){.adjustment-grid{grid-template-columns:minmax(0,1fr);gap:8px;}}
   .img-adjust .reset-btn{
     margin-top:4px;
     border:1px solid var(--steel-line);
@@ -1232,21 +1239,21 @@ button:disabled{opacity:.5;cursor:not-allowed;}
           <span style="font-family:'Nunito Sans',sans-serif; font-weight:900; font-size:14px; letter-spacing:.35px; text-transform:uppercase;">Beeld &amp; tekst aanpassen</span>
           <button type="button" class="reset-btn" onclick="resetAllAdjust()">Reset alles</button>
         </div>
-        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;">
+        <div class="adjustment-grid">
           <div class="adj-row">
-            <label>Beeld — zoom <span id="zoomVal">100%</span></label>
+            <label for="zoomSlider">Beeld — zoom <span id="zoomVal">100%</span></label>
             <input type="range" id="zoomSlider" min="100" max="220" value="100" oninput="onImageAdjust()">
           </div>
           <div class="adj-row">
-            <label>Beeld — horizontaal</label>
-            <input type="range" id="posXSlider" min="0" max="100" value="50" oninput="onImageAdjust()">
+            <label for="posXSlider">Beeld — horizontaal</label>
+            <input type="range" id="posXSlider" min="0" max="100" value="50" oninput="onImageAdjust('x')" onchange="onImageAdjust('x')">
           </div>
           <div class="adj-row">
-            <label>Beeld — verticaal</label>
-            <input type="range" id="posYSlider" min="0" max="100" value="50" oninput="onImageAdjust()">
+            <label for="posYSlider">Beeld — verticaal</label>
+            <input type="range" id="posYSlider" min="0" max="100" value="50" oninput="onImageAdjust('y')" onchange="onImageAdjust('y')">
           </div>
           <div class="adj-row">
-            <label>Tekstgrootte <span id="textVal">150%</span></label>
+            <label for="textSlider">Tekstgrootte <span id="textVal">150%</span></label>
             <input type="range" id="textSlider" min="70" max="220" value="150" oninput="onTextAdjust()">
           </div>
         </div>
@@ -1677,10 +1684,26 @@ const canvasResizeObserver = new ResizeObserver(entries => {
 });
 document.fonts?.ready.then(() => variantVisuals.forEach((_, idx) => applyTextScale(idx)));
 
-function onImageAdjust(){
+function onImageAdjust(axis){
   imgScale = document.getElementById('zoomSlider').value / 100;
   imgPosX = parseInt(document.getElementById('posXSlider').value, 10);
   imgPosY = parseInt(document.getElementById('posYSlider').value, 10);
+  // At cover-size one axis fits exactly, leaving no pixels to pan into.
+  // Add a little zoom only when the user tries to move along that axis.
+  if((axis === 'x' || axis === 'y') && imgScale < 1.2){
+    const image = document.querySelector(`.card[data-variant-index="${selectedVariantIndex}"] .product-img`);
+    if(image?.naturalWidth && image.naturalHeight){
+      const width = image.clientWidth, height = image.clientHeight;
+      const cover = Math.max(width / image.naturalWidth, height / image.naturalHeight);
+      const room = axis === 'x' ? image.naturalWidth * cover * imgScale - width : image.naturalHeight * cover * imgScale - height;
+      const position = axis === 'x' ? imgPosX : imgPosY;
+      if(room < 1 && position !== 50){
+        imgScale = 1.2;
+        document.getElementById('zoomSlider').value = 120;
+        studioNotice('Zoom aangepast naar 120% om het beeld te kunnen verschuiven.');
+      }
+    }
+  }
   document.getElementById('zoomVal').textContent = Math.round(imgScale * 100) + '%';
   if(variantVisuals[selectedVariantIndex]){
     Object.assign(variantVisuals[selectedVariantIndex], { imgScale, imgPosX, imgPosY });
