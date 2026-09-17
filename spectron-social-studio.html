@@ -1000,7 +1000,7 @@
   .img-thumb.selected{box-shadow:0 0 0 4px #35c5d2!important;}
   .gallery-arrow{background:#35c5d2;color:#34377a;}
   .mock-social .avatar,.mock-linkedin .li-head .avatar{background:#aa071b;}
-  .mock-social .canvas .scrim{background:rgba(52,55,122,.28)!important;}
+  .mock-social .canvas .scrim{background:linear-gradient(to bottom, transparent 25%, rgba(0,0,0,.24) 50%, rgba(0,0,0,.72) 80%, rgba(0,0,0,.88) 100%);}
   .editable:hover,.editable:focus{background:rgba(244,135,184,.35);box-shadow:none;}
   body *:not(.brandmark h1){font-family:'Inter',sans-serif!important;}
   .brandmark h1{font-family:'Inter',sans-serif!important;font-weight:900;}
@@ -1093,7 +1093,7 @@
 .saved-preview{position:relative;overflow:hidden;background:#34377a;display:flex;align-items:flex-end;padding:7%;}
 .saved-preview>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 .saved-preview .saved-logo{inset:5% 5% auto auto;width:32%;height:auto;object-fit:contain;}
-.saved-shade{position:absolute;inset:0;background:rgba(52,55,122,.28);}
+.saved-shade{position:absolute;inset:0;background:linear-gradient(to bottom, transparent 25%, rgba(0,0,0,.24) 50%, rgba(0,0,0,.72) 80%, rgba(0,0,0,.88) 100%);}
 .saved-preview strong{position:relative;color:white;line-height:1.04;overflow-wrap:anywhere;font-weight:900;}
 .saved-vertical{padding-bottom:39%;padding-right:18%;}.saved-vertical .saved-logo{top:14%;right:18%;}
 .save-actions{display:flex;flex-direction:column;gap:8px;margin-top:12px;align-items:flex-start;}
@@ -1102,9 +1102,12 @@
 #duplicateDialog{border:0;border-radius:16px;padding:28px;max-width:480px;width:calc(100% - 32px);color:#34377a;}
 #duplicateDialog::backdrop{background:#17183399;}.duplicate-choice{display:flex;gap:10px;align-items:center;padding:14px 0;}.duplicate-choice small{margin-left:auto;}
 button:disabled{opacity:.5;cursor:not-allowed;}
-.mock-social .canvas.vertical-canvas{padding:14% 18% 39% 7%;}
+.mock-social .canvas{width:100%;min-height:0;padding:0;}
+.mock-social .canvas.vertical-canvas{padding:0;}
 .mock-social .canvas.vertical-canvas .ad-logo{top:14%;right:18%;}
-.mock-social .canvas .headline-on-image{overflow-wrap:anywhere;max-width:100%;}
+.mock-social .canvas .headline-on-image{position:absolute;left:7%;right:7%;bottom:7%;overflow-wrap:anywhere;max-width:100%;}
+.mock-social .canvas.vertical-canvas .headline-on-image{right:18%;bottom:22%;}
+.mock-social .caption{font-size:15px;line-height:1.5;}
 </style>
 </head>
 <body>
@@ -1243,8 +1246,8 @@ button:disabled{opacity:.5;cursor:not-allowed;}
             <input type="range" id="posYSlider" min="0" max="100" value="50" oninput="onImageAdjust()">
           </div>
           <div class="adj-row">
-            <label>Tekstgrootte <span id="textVal">120%</span></label>
-            <input type="range" id="textSlider" min="70" max="180" value="120" oninput="onTextAdjust()">
+            <label>Tekstgrootte <span id="textVal">150%</span></label>
+            <input type="range" id="textSlider" min="70" max="220" value="150" oninput="onTextAdjust()">
           </div>
         </div>
       </div>
@@ -1559,6 +1562,7 @@ function wrapCanvasText(ctx, text, maxWidth){
 }
 
 async function downloadTikTokVideo(idx){
+  const {imgScale, imgPosX, imgPosY, textScale} = structuredClone(variantVisuals[idx]);
   if(!selectedImage){
     alert("Kies eerst een productbeeld voor de TikTok-video.");
     return;
@@ -1604,10 +1608,11 @@ async function downloadTikTokVideo(idx){
         const motionScale = Math.max(1, imgScale) * (1 + progress * .08);
         drawCoverImage(ctx, photo, canvas.width, canvas.height, motionScale, imgPosX, imgPosY);
 
-        const gradient = ctx.createLinearGradient(0, canvas.height * .4, 0, canvas.height);
-        gradient.addColorStop(0, "rgba(0,0,0,0)");
-        gradient.addColorStop(.55, "rgba(0,0,0,.14)");
-        gradient.addColorStop(1, "rgba(0,0,0,.72)");
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(.25, "rgba(0,0,0,0)");
+        gradient.addColorStop(.5, "rgba(0,0,0,.24)");
+        gradient.addColorStop(.8, "rgba(0,0,0,.72)");
+        gradient.addColorStop(1, "rgba(0,0,0,.88)");
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -1658,11 +1663,19 @@ let selectedImage = null;
 let imgScale = 1;
 let imgPosX = 50;
 let imgPosY = 50;
-let textScale = 1.2;
+const DEFAULT_TEXT_SCALE = 1.5;
+let textScale = DEFAULT_TEXT_SCALE;
 
 const TEXT_BASE_SIZES = {
   ".headline-on-image": 26
 };
+const canvasResizeObserver = new ResizeObserver(entries => {
+  entries.forEach(({target}) => {
+    const card = target.closest('.card');
+    if(card) applyTextScale(Number(card.dataset.variantIndex));
+  });
+});
+document.fonts?.ready.then(() => variantVisuals.forEach((_, idx) => applyTextScale(idx)));
 
 function onImageAdjust(){
   imgScale = document.getElementById('zoomSlider').value / 100;
@@ -1675,10 +1688,11 @@ function onImageAdjust(){
   applyImageTransform();
 }
 
-function applyImageTransform(){
+function applyImageTransform(idx = selectedVariantIndex){
+  const {imgScale, imgPosX, imgPosY} = variantVisuals[idx];
   const translateX = (50 - imgPosX) * (imgScale - 1);
   const translateY = (50 - imgPosY) * (imgScale - 1);
-  document.querySelectorAll(`.card[data-variant-index="${selectedVariantIndex}"] .product-img`).forEach(img => {
+  document.querySelectorAll(`.card[data-variant-index="${idx}"] .product-img`).forEach(img => {
     img.style.transform = `translate(${translateX}%, ${translateY}%) scale(${imgScale})`;
     img.style.transformOrigin = `center center`;
     img.style.objectPosition = `${imgPosX}% ${imgPosY}%`;
@@ -1694,14 +1708,16 @@ function onTextAdjust(){
   applyTextScale();
 }
 
-function applyTextScale(){
+function applyTextScale(idx = selectedVariantIndex){
+  const scale = variantVisuals[idx]?.textScale || DEFAULT_TEXT_SCALE;
   Object.entries(TEXT_BASE_SIZES).forEach(([selector, base]) => {
-    document.querySelectorAll(`.card[data-variant-index="${selectedVariantIndex}"] ${selector}`).forEach(el => {
-      el.style.fontSize = (base * textScale) + 'px';
+    document.querySelectorAll(`.card[data-variant-index="${idx}"] ${selector}`).forEach(el => {
+      const canvas = el.parentElement;
+      const requestedSize = base * scale * canvas.clientWidth / 320;
+      el.style.fontSize = requestedSize + 'px';
       if(el.classList.contains('headline-on-image')){
-        const canvas = el.parentElement;
         const maxHeight = canvas.clientHeight * (canvas.classList.contains('vertical-canvas') ? .45 : .65);
-        let size = base * textScale;
+        let size = requestedSize;
         while(el.offsetHeight > maxHeight && size > 10){ el.style.fontSize = (--size) + 'px'; }
       }
     });
@@ -1716,7 +1732,7 @@ function resetImageAdjust(){
 }
 
 function resetTextAdjust(){
-  document.getElementById('textSlider').value = 120;
+  document.getElementById('textSlider').value = DEFAULT_TEXT_SCALE * 100;
   onTextAdjust();
 }
 
@@ -2030,6 +2046,7 @@ Als hashtags niet van toepassing zijn voor dit platform, geef een lege array ter
 }
 
 function renderResults(variants, platform, product, isOffline){
+  canvasResizeObserver.disconnect();
   const resultsArea = document.getElementById('resultsArea');
   const limits = PLATFORM_LIMITS[platform];
   const brand = document.getElementById('brand').value;
@@ -2158,11 +2175,12 @@ function renderResults(variants, platform, product, isOffline){
     imgScale:1,
     imgPosX:50,
     imgPosY:50,
-    textScale:1.2
+    textScale:DEFAULT_TEXT_SCALE
   }));
   selectVariant(0);
   applyImageTransform();
-  applyTextScale();
+  variantVisuals.forEach((_, idx) => { applyImageTransform(idx); applyTextScale(idx); });
+  document.querySelectorAll('.mock-social .canvas').forEach(canvas => canvasResizeObserver.observe(canvas));
   document.getElementById('downloadAllBtn').style.display = variants.length ? 'inline-block' : 'none';
 }
 
@@ -2221,15 +2239,17 @@ document.getElementById('brand').addEventListener('change', ()=>{
     ? `Fotobibliotheek van ${brand} updaten`
     : 'Fotobibliotheek van geselecteerd merk updaten';
 });
-document.getElementById('platform').addEventListener('change', ()=>{ updateFormatOptions(); updateStepIndicator(); });
+function reformatCurrentAds(){
+  if(!currentVariants.length) return;
+  const visuals = structuredClone(variantVisuals);
+  renderResults(currentVariants,document.getElementById('platform').value,currentProduct,false);
+  variantVisuals = visuals;
+  visuals.forEach((v,i) => { selectVariant(i); applyImageTransform(); applyTextScale(i); });
+  selectVariant(0);
+}
+document.getElementById('platform').addEventListener('change', ()=>{ updateFormatOptions(); updateStepIndicator(); reformatCurrentAds(); });
 document.getElementById('format').addEventListener('change', ()=>{
-  if(currentVariants.length){
-    const visuals = structuredClone(variantVisuals);
-    renderResults(currentVariants,currentPlatform,currentProduct,false);
-    variantVisuals = visuals;
-    visuals.forEach((v,i) => { selectVariant(i); applyImageTransform(); applyTextScale(); });
-    selectVariant(0);
-  }
+  reformatCurrentAds();
 });
 document.getElementById('uspChips').addEventListener('click', ()=> setTimeout(updateStepIndicator, 0));
 updateStepIndicator();

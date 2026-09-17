@@ -1,5 +1,25 @@
 ﻿const fs=require('node:fs'), vm=require('node:vm'), assert=require('node:assert/strict');
 const elements=new Map();
+// Exercise the actual text-fitting function at two proportional 9:16 preview sizes.
+const pageSource=fs.readFileSync('spectron-social-studio.html','utf8');
+const fitSource=pageSource.slice(pageSource.indexOf('function applyTextScale('),pageSource.indexOf('function resetImageAdjust('));
+const preview={clientWidth:280,clientHeight:280*16/9,classList:{contains:()=>true}};
+let lines=2;
+const headline={parentElement:preview,style:{},classList:{contains:()=>true},get offsetHeight(){return parseFloat(this.style.fontSize)*1.04*lines;}};
+const fitContext=vm.createContext({selectedVariantIndex:0,variantVisuals:[{textScale:1.5},{textScale:1.8}],DEFAULT_TEXT_SCALE:1.5,TEXT_BASE_SIZES:{'.headline-on-image':26},document:{querySelectorAll:()=>[headline]}});
+vm.runInContext(fitSource,fitContext);
+vm.runInContext('applyTextScale(0)',fitContext);
+const smallSize=parseFloat(headline.style.fontSize);
+assert.equal(smallSize,26*1.5*280/320);
+preview.clientWidth=560;preview.clientHeight=560*16/9;
+vm.runInContext('applyTextScale(0)',fitContext);
+assert.equal(parseFloat(headline.style.fontSize),smallSize*2);
+vm.runInContext('applyTextScale(1)',fitContext);
+assert.equal(parseFloat(headline.style.fontSize),26*1.8*560/320);
+lines=20;
+vm.runInContext('applyTextScale(0)',fitContext);
+assert.ok(headline.offsetHeight<=preview.clientHeight*.45);
+console.log('PASS: proportional 9:16 text scaling, per-variant sizing, long-headline fitting');
 for(const match of fs.readFileSync('spectron-social-studio.html','utf8').matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)) new vm.Script(match[1]);
 function el(){return {textContent:'',style:{},classList:{add(){}},append(){},replaceChildren(){},scrollIntoView(){},close(){},showModal(){},getAttribute(){return 'product.png'}};}
 const rows=new Map();let selected=[];let clipboard='';
