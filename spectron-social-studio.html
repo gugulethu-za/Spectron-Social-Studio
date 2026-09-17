@@ -1018,6 +1018,35 @@
   .mock-social.vertical{max-width:280px; margin:0 auto;}
   .card-dl-row{flex-wrap:wrap; gap:6px;}
   .card-dl-btn{flex:1; min-width:120px;}
+  .card-text-actions{
+    display:flex;
+    flex-direction:row;
+    flex-wrap:wrap;
+    gap:12px;
+    align-items:center;
+    justify-content:flex-start;
+    margin-top:16px;
+  }
+  .mock-social .cta-row.card-text-actions{margin-top:0;}
+  .card-text-actions .cta-pill{
+    flex:0 1 auto;
+    min-width:0;
+    max-width:100%;
+    overflow-wrap:anywhere;
+  }
+  .card-text-actions .card-dl-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+    min-height:40px;
+    padding:10px 16px;
+    line-height:1.4;
+    white-space:nowrap;
+  }
+  @media (max-width:380px){
+    .card-text-actions{flex-direction:column;align-items:flex-start;}
+  }
   @media (max-width:1120px){
     .cards{grid-template-columns:1fr;}
   }
@@ -1040,6 +1069,26 @@
       -webkit-backdrop-filter:none;
     }
   }
+
+#studioStatus{position:sticky;top:8px;z-index:20;background:#eef3ee;color:#34377a;padding:12px;border-radius:8px;margin:12px 0;}
+#studioStatus:empty{display:none;}
+#savedLibrary{margin-top:32px;border-top:1px solid #ddd;padding-top:24px;}
+#savedAds{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;}
+.saved-ad{min-width:0;background:white;border:1px solid #ddd;border-radius:12px;padding:14px;}
+.saved-ad h3{font-size:14px;margin-bottom:12px;}.saved-ad p{white-space:pre-wrap;overflow-wrap:anywhere;}
+.saved-preview{position:relative;overflow:hidden;background:#34377a;display:flex;align-items:flex-end;padding:7%;}
+.saved-preview>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.saved-preview .saved-logo{inset:5% 5% auto auto;width:32%;height:auto;object-fit:contain;}
+.saved-shade{position:absolute;inset:0;background:rgba(52,55,122,.28);}
+.saved-preview strong{position:relative;color:white;line-height:1.04;overflow-wrap:anywhere;font-weight:900;}
+.saved-vertical{padding-bottom:39%;padding-right:18%;}.saved-vertical .saved-logo{top:14%;right:18%;}
+.save-actions{display:flex;flex-direction:column;gap:8px;margin-top:12px;align-items:flex-start;}
+#duplicateDialog{border:0;border-radius:16px;padding:28px;max-width:480px;width:calc(100% - 32px);color:#34377a;}
+#duplicateDialog::backdrop{background:#17183399;}.duplicate-choice{display:flex;gap:10px;align-items:center;padding:14px 0;}.duplicate-choice small{margin-left:auto;}
+button:disabled{opacity:.5;cursor:not-allowed;}
+.mock-social .canvas.vertical-canvas{padding:14% 18% 39% 7%;}
+.mock-social .canvas.vertical-canvas .ad-logo{top:14%;right:18%;}
+.mock-social .canvas .headline-on-image{overflow-wrap:anywhere;max-width:100%;}
 </style>
 </head>
 <body>
@@ -1184,7 +1233,15 @@
         </div>
       </div>
 
+      <div id="studioStatus" role="status" aria-live="polite"></div>
       <div id="resultsArea"></div>
+      <section id="savedLibrary"><h2>Opgeslagen advertenties (<span id="savedCount">0</span>)</h2>
+      <p>Bewaard in deze browser. Open een advertentie om te bewerken, kopiëren of downloaden.</p><div id="savedAds"></div></section>
+      <dialog id="duplicateDialog" aria-labelledby="duplicateTitle"><h2 id="duplicateTitle">Dupliceren naar formaten</h2>
+      <p>Selecteer twee, drie of vier kanalen. Tekst en beeld worden hergebruikt.</p><div id="duplicateChoices"></div>
+      <p id="duplicateStatus" role="status" aria-live="polite"></p>
+      <div class="card-dl-row"><button class="card-dl-btn" onclick="document.getElementById('duplicateDialog').close()">Annuleren</button>
+      <button class="card-dl-btn" id="confirmDuplicate" onclick="confirmDuplicate()" disabled>Maak batch</button></div></dialog>
     </div>
 
   </div>
@@ -1344,13 +1401,13 @@ function downloadAllVariants(){
   triggerDownload(filename, text);
 }
 
-async function downloadCardImage(idx){
+async function downloadCardImage(idx, copyOnly=false){
   const cardVisual = document.getElementById(`cardVisual-${idx}`);
   if(!cardVisual) return;
   const node = cardVisual.querySelector('.canvas') || cardVisual.querySelector('.mock-google') || cardVisual;
-  const filename = askExportName(exportLabel(currentPlatform, idx), "png");
+  const filename = copyOnly ? "clipboard.png" : askExportName(exportLabel(currentPlatform, idx), "png");
   if(!filename) return;
-  const btn = document.getElementById(`imgBtn-${idx}`);
+  const btn = document.getElementById(`${copyOnly ? "copyImgBtn" : "imgBtn"}-${idx}`);
   const originalLabel = btn ? btn.textContent : "";
   if(btn){ btn.textContent = "Bezig…"; btn.disabled = true; }
 
@@ -1405,7 +1462,7 @@ async function downloadCardImage(idx){
     await Promise.all(loadPromises);
     if(document.fonts && document.fonts.ready) await document.fonts.ready;
     const canvas = await window.html2canvas(node, { backgroundColor: "#ffffff", scale: 2, useCORS: true, allowTaint: false });
-    const format = getFormatSpec(currentPlatform);
+    const format = (PLATFORM_FORMATS[currentPlatform] || []).find(f => f.value === currentFormat) || {};
     let exportCanvas = canvas;
     if(format.width && format.height){
       exportCanvas = document.createElement('canvas');
@@ -1416,7 +1473,9 @@ async function downloadCardImage(idx){
       exportCtx.fillRect(0,0,format.width,format.height);
       exportCtx.drawImage(canvas,0,0,format.width,format.height);
     }
-    exportCanvas.toBlob(blob => {
+    const blob = await new Promise((resolve,reject) => exportCanvas.toBlob(b => b ? resolve(b) : reject(new Error('PNG mislukt')), 'image/png'));
+    if(copyOnly) return blob;
+    {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -1425,14 +1484,26 @@ async function downloadCardImage(idx){
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    });
+    }
   }catch(e){
+    if(copyOnly) throw e;
     alert("Afbeelding downloaden lukte niet (mogelijk door het extern productbeeld). Gebruik anders de tekst-download of maak een schermafbeelding.");
   }finally{
     swappedStyles.forEach(({ el, original }) => el.setAttribute('style', original));
     swappedImgs.forEach(({ img, original }) => { img.removeAttribute('crossorigin'); img.src = original; });
     if(btn){ btn.textContent = originalLabel; btn.disabled = false; }
   }
+}
+
+async function copyCardImage(idx){
+  if(!navigator.clipboard?.write || !window.ClipboardItem){
+    studioNotice('Afbeeldingen kopiëren is niet beschikbaar in deze browser. Gebruik de downloadknop.'); return;
+  }
+  try{
+    const png = downloadCardImage(idx, true);
+    await navigator.clipboard.write([new ClipboardItem({'image/png':png})]);
+    studioNotice('Afbeelding gekopieerd als PNG.');
+  }catch(e){ studioNotice('Afbeelding kopiëren mislukt. Controleer klembordtoegang of gebruik Download.'); }
 }
 
 function loadCanvasImage(src){
@@ -1611,6 +1682,12 @@ function applyTextScale(){
   Object.entries(TEXT_BASE_SIZES).forEach(([selector, base]) => {
     document.querySelectorAll(`.card[data-variant-index="${selectedVariantIndex}"] ${selector}`).forEach(el => {
       el.style.fontSize = (base * textScale) + 'px';
+      if(el.classList.contains('headline-on-image')){
+        const canvas = el.parentElement;
+        const maxHeight = canvas.clientHeight * (canvas.classList.contains('vertical-canvas') ? .45 : .65);
+        let size = base * textScale;
+        while(el.offsetHeight > maxHeight && size > 10){ el.style.fontSize = (--size) + 'px'; }
+      }
     });
   });
 }
@@ -1983,7 +2060,10 @@ function renderResults(variants, platform, product, isOffline){
           </div>
           <div class="caption"><b>${escapeHtml(brandHandle)}</b> <span class="editable" contenteditable="true" data-idx="${idx}" data-field="body" oninput="onEdit(this)">${escapeHtml(body)}</span></div>
           <div class="hashtags editable" contenteditable="true" data-idx="${idx}" data-field="hashtags" oninput="onEdit(this)">${hashtags.length ? hashtags.map(h=>'#'+h.replace(/^#/,'')).join(' ') : ''}</div>
-          <div class="cta-row"><span class="cta-pill editable" contenteditable="true" data-idx="${idx}" data-field="cta" oninput="onEdit(this)">${escapeHtml(cta)}</span></div>
+          <div class="cta-row card-text-actions">
+            <span class="cta-pill editable" contenteditable="true" data-idx="${idx}" data-field="cta" oninput="onEdit(this)">${escapeHtml(cta)}</span>
+            <button class="card-dl-btn" data-html2canvas-ignore="true" onclick="copyAdText(${idx})">Kopieer tekst</button>
+          </div>
         </div>`;
     } else if(limits.mock === "google"){
       mockHtml = `
@@ -2023,6 +2103,9 @@ function renderResults(variants, platform, product, isOffline){
           <div id="cardVisual-${idx}">
           ${mockHtml}
           </div>
+          ${limits.mock !== 'social' ? `<div class="card-text-actions">
+            <button class="card-dl-btn" onclick="copyAdText(${idx})">Kopieer tekst</button>
+          </div>` : ''}
           <div class="meta-row">
             <span class="meta-item ${hOver?'over-limit':''}" id="hcount-${idx}"><b>${headline.length}</b>/${limits.headline} tekens — kop</span>
             <span class="meta-item ${bOver?'over-limit':''}" id="bcount-${idx}"><b>${body.length}</b>/${limits.body} tekens — body</span>
@@ -2031,8 +2114,10 @@ function renderResults(variants, platform, product, isOffline){
           <div class="card-dl-row">
             <button class="card-dl-btn" onclick="downloadVariant(${idx})">↓ Tekst (.txt)</button>
             <button class="card-dl-btn" id="imgBtn-${idx}" onclick="downloadCardImage(${idx})">↓ Afbeelding (.png)</button>
+            <button class="card-dl-btn" id="copyImgBtn-${idx}" onclick="copyCardImage(${idx})">Kopieer afbeelding</button>
             ${platform === "TikTok" ? `<button class="card-dl-btn" id="videoBtn-${idx}" onclick="downloadTikTokVideo(${idx})">▶ Video (6 sec)</button>` : ''}
           </div>
+          <div class="save-actions"><button class="card-dl-btn" onclick="saveAd(${idx})">Opslaan</button><button class="card-dl-btn" onclick="showDuplicate(${idx})">Dupliceren</button></div>
         </div>
       </div>`;
   });
@@ -2080,6 +2165,7 @@ function onEdit(el){
       countEl.classList.toggle("over-limit", len > max);
     }
   }
+  if(field === 'headline') applyTextScale();
 }
 
 // step indicator
@@ -2100,11 +2186,20 @@ document.getElementById('brand').addEventListener('change', ()=>{
     : 'Fotobibliotheek van geselecteerd merk updaten';
 });
 document.getElementById('platform').addEventListener('change', ()=>{ updateFormatOptions(); updateStepIndicator(); });
-document.getElementById('format').addEventListener('change', ()=>{ if(currentVariants.length) renderResults(currentVariants,currentPlatform,currentProduct,false); });
+document.getElementById('format').addEventListener('change', ()=>{
+  if(currentVariants.length){
+    const visuals = structuredClone(variantVisuals);
+    renderResults(currentVariants,currentPlatform,currentProduct,false);
+    variantVisuals = visuals;
+    visuals.forEach((v,i) => { selectVariant(i); applyImageTransform(); applyTextScale(); });
+    selectVariant(0);
+  }
+});
 document.getElementById('uspChips').addEventListener('click', ()=> setTimeout(updateStepIndicator, 0));
 updateStepIndicator();
 updateFormatOptions();
 renderImageGallery();
 </script>
+<script src="studio-library.js"></script>
 </body>
 </html>

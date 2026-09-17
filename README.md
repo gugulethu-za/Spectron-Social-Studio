@@ -62,6 +62,31 @@ Press **Ctrl+C** to stop. Restart the command after changing `.env`.
 
 See Netlify's [local development guide](https://docs.netlify.com/api-and-cli-guides/cli-guides/local-development/) for more details.
 
+## Save, duplicate, and copy
+
+Each generated ad now has **Opslaan** (Save) and **Dupliceren** (Duplicate).
+Duplicate lets you select two to four channels and saves the entire batch:
+Facebook 1080×1080, Instagram Post 1080×1350, Instagram Story and TikTok 1080×1920.
+Text, image, and image adjustments are preserved. Saved previews appear below the editor;
+choose **Openen en bewerken** to edit one and **Opslaan** to update it.
+Saved ads use IndexedDB in the current browser and site address. Clearing site data removes them.
+
+**Kopieer tekst** copies the edited text; **Kopieer afbeelding** copies the rendered PNG.
+Image clipboard access requires a supporting browser on HTTPS or localhost and clipboard permission.
+The existing download buttons remain available.
+
+Local verification:
+
+1. Generate an ad and edit its headline, body, and image positioning.
+2. Save, refresh, and reopen it; check that the content and adjustments survived.
+3. Duplicate into two, three, then four formats; inspect each preview and reopen it.
+4. Download the images and check their pixel dimensions; inspect vertical text/logo margins.
+5. Copy text into a text editor and copy an image into an app that accepts pasted images.
+6. Edit a saved ad and save again; its existing library entry should update.
+
+Run `node test-studio-library.cjs` for isolated logic checks with simulated browser storage
+and clipboard. Actual browser persistence, rendering, and clipboard pasting still need the checks above.
+
 ## Deploy to Netlify
 
 ### Set the production API key

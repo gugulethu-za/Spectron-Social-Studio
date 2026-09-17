@@ -1,0 +1,46 @@
+﻿const fs=require('node:fs'), vm=require('node:vm'), assert=require('node:assert/strict');
+const elements=new Map();
+for(const match of fs.readFileSync('spectron-social-studio.html','utf8').matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)) new vm.Script(match[1]);
+function el(){return {textContent:'',style:{},classList:{add(){}},append(){},replaceChildren(){},scrollIntoView(){},close(){},showModal(){},getAttribute(){return 'product.png'}};}
+const rows=new Map();let selected=[];let clipboard='';
+const db={transaction(store,mode){const tx={};tx.objectStore=()=>({put(ad){rows.set(ad.id,structuredClone(ad));},getAll(){const r={};queueMicrotask(()=>{r.result=[...rows.values()];r.onsuccess();});return r;}});if(mode==='readwrite')setTimeout(()=>tx.oncomplete(),0);return tx;}};
+const context=vm.createContext({console,structuredClone,crypto:require('node:crypto').webcrypto,setTimeout,
+ indexedDB:{open(){const r={};queueMicrotask(()=>{r.result=db;r.onsuccess()});return r;}},
+ document:{getElementById(id){if(!elements.has(id))elements.set(id,el());return elements.get(id);},querySelector(){return el()},querySelectorAll(){return selected;},createElement:el},
+ navigator:{clipboard:{async writeText(t){clipboard=t}}},
+ currentVariants:[{headline:'Edited headline',body:'Same exact body',cta:'Shop now',hashtags:['toy']}],currentBrand:'Bluey',currentProduct:'Toy',currentPlatform:'Instagram / Facebook post',currentFormat:'1080x1080',selectedImage:'product.png',variantVisuals:[{imgScale:1.4,imgPosX:35,imgPosY:60,textScale:1.2}],SPECTRON_LOGO_SRC:'logo.png',
+ updateFormatOptions(){},renderResults(){},selectVariant(){},applyImageTransform(){},applyTextScale(){}
+});
+vm.runInContext(fs.readFileSync('studio-library.js','utf8'),context);
+(async()=>{
+ await vm.runInContext('adDatabase',context);
+ for(const count of [0,1]){
+  selected=Array.from({length:count},(_,i)=>({value:String(i)}));
+  vm.runInContext('showDuplicate(0)',context);
+  assert.equal(elements.get('confirmDuplicate').disabled,true);
+  await vm.runInContext('confirmDuplicate()',context);
+  assert.equal(rows.size,0);
+ }
+ for(const count of [2,3,4]){
+  const before=rows.size;selected=Array.from({length:count},(_,i)=>({value:String(i)}));
+  vm.runInContext('duplicateSource = snapshotAd(0)',context);
+  await vm.runInContext('confirmDuplicate()',context);
+  assert.equal(rows.size,before+count);
+  const batch=[...rows.values()].slice(-count);
+  assert.equal(new Set(batch.map(a=>a.batchId)).size,1);
+  assert.equal(new Set(batch.map(a=>a.id)).size,count);
+  for(const ad of batch){assert.equal(ad.variant.headline,'Edited headline');assert.equal(ad.variant.body,'Same exact body');assert.equal(ad.visual.imgScale,1.4);assert.equal(ad.image,'product.png');}
+  assert.deepEqual(batch.map(a=>a.format),['1080x1080','1080x1350','1080x1920','1080x1920'].slice(0,count));
+ }
+ await vm.runInContext('saveAd(0)',context);const n=rows.size;
+ context.currentVariants[0].headline='Updated saved headline';await vm.runInContext('saveAd(0)',context);assert.equal(rows.size,n);
+ await vm.runInContext('refreshSavedAds()',context);assert.equal(vm.runInContext('savedAds.length',context),n);
+ await vm.runInContext('copyAdText(0)',context);assert.equal(clipboard,'Updated saved headline\n\nSame exact body\n\nShop now\n\n#toy');
+ console.log('PASS: batches of 2/3/4, unique IDs, format dimensions, content/image/style preservation, save updates, library reload, clipboard text');
+ selected=[{value:'0'},{value:'3'}];
+ const before=rows.size;
+ vm.runInContext('showDuplicate(0)',context);
+ await vm.runInContext('Promise.all([confirmDuplicate(),confirmDuplicate()])',context);
+ assert.equal(rows.size,before+2,'Repeated submit must only save one batch');
+ console.log('PASS: inline script syntax, minimum selection, repeated-submit protection');
+})().catch(e=>{console.error(e);process.exitCode=1;});
