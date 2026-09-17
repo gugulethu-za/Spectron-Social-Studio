@@ -1034,16 +1034,30 @@
     max-width:100%;
     overflow-wrap:anywhere;
   }
-  .card-text-actions .card-dl-btn{
+  .copy-text-icon{
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    flex:0 0 auto;
-    min-height:40px;
-    padding:10px 16px;
-    line-height:1.4;
-    white-space:nowrap;
+    flex:0 0 40px;
+    width:40px;
+    height:40px;
+    padding:10px;
+    border:0;
+    border-radius:8px;
+    background:transparent;
+    color:#aa071b;
+    cursor:pointer;
   }
+  .copy-text-icon svg{width:20px;height:20px;flex:none;}
+  .copy-text-icon:hover{background:#35c5d2;color:#34377a;}
+  .copy-text-icon:focus-visible{outline:2px solid #34377a;outline-offset:2px;}
+  .image-copy-actions{display:flex;justify-content:flex-end;padding:4px 12px;}
+  .download-menu{max-width:100%;}
+  .download-menu summary{display:flex;align-items:center;justify-content:center;gap:10px;list-style:none;}
+  .download-menu summary::-webkit-details-marker{display:none;}
+  .download-menu summary:focus-visible{outline:2px solid #34377a;outline-offset:2px;}
+  .download-options{display:flex;flex-direction:column;gap:4px;margin-top:8px;padding:6px;border:1px solid var(--steel-line);border-radius:10px;background:#fff;}
+  .download-options .card-dl-btn{flex:none;text-align:left;border:0;border-radius:6px;min-height:40px;}
   @media (max-width:380px){
     .card-text-actions{flex-direction:column;align-items:flex-start;}
   }
@@ -1083,6 +1097,8 @@
 .saved-preview strong{position:relative;color:white;line-height:1.04;overflow-wrap:anywhere;font-weight:900;}
 .saved-vertical{padding-bottom:39%;padding-right:18%;}.saved-vertical .saved-logo{top:14%;right:18%;}
 .save-actions{display:flex;flex-direction:column;gap:8px;margin-top:12px;align-items:flex-start;}
+.save-actions .card-dl-btn{background:#218547;border-color:#218547;color:#fff;}
+.save-actions .card-dl-btn:hover{background:#196b38;border-color:#196b38;color:#fff;}
 #duplicateDialog{border:0;border-radius:16px;padding:28px;max-width:480px;width:calc(100% - 32px);color:#34377a;}
 #duplicateDialog::backdrop{background:#17183399;}.duplicate-choice{display:flex;gap:10px;align-items:center;padding:14px 0;}.duplicate-choice small{margin-left:auto;}
 button:disabled{opacity:.5;cursor:not-allowed;}
@@ -1409,7 +1425,7 @@ async function downloadCardImage(idx, copyOnly=false){
   if(!filename) return;
   const btn = document.getElementById(`${copyOnly ? "copyImgBtn" : "imgBtn"}-${idx}`);
   const originalLabel = btn ? btn.textContent : "";
-  if(btn){ btn.textContent = "Bezig…"; btn.disabled = true; }
+  if(btn){ if(!copyOnly) btn.textContent = "Bezig…"; btn.disabled = true; btn.setAttribute('aria-busy','true'); }
 
   // Temporarily point any remote images at a CORS-safe proxy so html2canvas can read pixels.
   // Restored to the original (fast, direct) source right after capture.
@@ -1491,7 +1507,7 @@ async function downloadCardImage(idx, copyOnly=false){
   }finally{
     swappedStyles.forEach(({ el, original }) => el.setAttribute('style', original));
     swappedImgs.forEach(({ img, original }) => { img.removeAttribute('crossorigin'); img.src = original; });
-    if(btn){ btn.textContent = originalLabel; btn.disabled = false; }
+    if(btn){ if(!copyOnly) btn.textContent = originalLabel; btn.disabled = false; btn.removeAttribute('aria-busy'); }
   }
 }
 
@@ -2039,8 +2055,10 @@ function renderResults(variants, platform, product, isOffline){
     const body = v.body || "";
     const cta = v.cta || "Bekijk nu";
     const hashtags = Array.isArray(v.hashtags) ? v.hashtags : [];
+    const copyTextButton = `<button type="button" class="copy-text-icon" aria-label="Kopieer tekst" title="Kopieer tekst" data-html2canvas-ignore="true" onclick="copyAdText(${idx})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button>`;
 
     const hOver = headline.length > limits.headline;
+    const copyImageButton = copyTextButton.replace('class="copy-text-icon"', `id="copyImgBtn-${idx}" class="copy-text-icon"`).replaceAll('Kopieer tekst', 'Kopieer afbeelding').replace('copyAdText(', 'copyCardImage(');
     const bOver = body.length > limits.body;
 
     let mockHtml = "";
@@ -2058,11 +2076,12 @@ function renderResults(variants, platform, product, isOffline){
             <img class="ad-logo spectron-ad-logo" src="${SPECTRON_LOGO_SRC}" alt="Spectron Toy Company">
             <div class="headline-on-image editable" contenteditable="true" data-idx="${idx}" data-field="headline" oninput="onEdit(this)">${escapeHtml(headline)}</div>
           </div>
+          <div class="image-copy-actions" data-html2canvas-ignore="true">${copyImageButton}</div>
           <div class="caption"><b>${escapeHtml(brandHandle)}</b> <span class="editable" contenteditable="true" data-idx="${idx}" data-field="body" oninput="onEdit(this)">${escapeHtml(body)}</span></div>
           <div class="hashtags editable" contenteditable="true" data-idx="${idx}" data-field="hashtags" oninput="onEdit(this)">${hashtags.length ? hashtags.map(h=>'#'+h.replace(/^#/,'')).join(' ') : ''}</div>
           <div class="cta-row card-text-actions">
             <span class="cta-pill editable" contenteditable="true" data-idx="${idx}" data-field="cta" oninput="onEdit(this)">${escapeHtml(cta)}</span>
-            <button class="card-dl-btn" data-html2canvas-ignore="true" onclick="copyAdText(${idx})">Kopieer tekst</button>
+            ${copyTextButton}
           </div>
         </div>`;
     } else if(limits.mock === "google"){
@@ -2104,7 +2123,8 @@ function renderResults(variants, platform, product, isOffline){
           ${mockHtml}
           </div>
           ${limits.mock !== 'social' ? `<div class="card-text-actions">
-            <button class="card-dl-btn" onclick="copyAdText(${idx})">Kopieer tekst</button>
+            ${copyTextButton}
+            ${copyImageButton}
           </div>` : ''}
           <div class="meta-row">
             <span class="meta-item ${hOver?'over-limit':''}" id="hcount-${idx}"><b>${headline.length}</b>/${limits.headline} tekens — kop</span>
@@ -2112,10 +2132,14 @@ function renderResults(variants, platform, product, isOffline){
             <span class="meta-item">merk: <b>${escapeHtml(brand)}</b> · product: <b>${escapeHtml(product)}</b></span>
           </div>
           <div class="card-dl-row">
-            <button class="card-dl-btn" onclick="downloadVariant(${idx})">↓ Tekst (.txt)</button>
-            <button class="card-dl-btn" id="imgBtn-${idx}" onclick="downloadCardImage(${idx})">↓ Afbeelding (.png)</button>
-            <button class="card-dl-btn" id="copyImgBtn-${idx}" onclick="copyCardImage(${idx})">Kopieer afbeelding</button>
-            ${platform === "TikTok" ? `<button class="card-dl-btn" id="videoBtn-${idx}" onclick="downloadTikTokVideo(${idx})">▶ Video (6 sec)</button>` : ''}
+            <details class="download-menu">
+              <summary class="card-dl-btn">Download <span aria-hidden="true">▾</span></summary>
+              <div class="download-options">
+                <button type="button" class="card-dl-btn" onclick="this.closest('details').open=false; downloadVariant(${idx})">Tekst (.txt)</button>
+                <button type="button" class="card-dl-btn" id="imgBtn-${idx}" onclick="this.closest('details').open=false; downloadCardImage(${idx})">Afbeelding (.png)</button>
+                ${platform === "TikTok" ? `<button type="button" class="card-dl-btn" id="videoBtn-${idx}" onclick="this.closest('details').open=false; downloadTikTokVideo(${idx})">Video (6 sec)</button>` : ''}
+              </div>
+            </details>
           </div>
           <div class="save-actions"><button class="card-dl-btn" onclick="saveAd(${idx})">Opslaan</button><button class="card-dl-btn" onclick="showDuplicate(${idx})">Dupliceren</button></div>
         </div>
@@ -2176,6 +2200,18 @@ function updateStepIndicator(){
   if(getSelectedUSPs().length) done++;
   document.getElementById('stepIndicator').textContent = done + "/3 INGEVULD";
 }
+document.addEventListener('click', event => {
+  document.querySelectorAll('.download-menu[open]').forEach(menu => {
+    if(!menu.contains(event.target)) menu.open = false;
+  });
+});
+document.addEventListener('keydown', event => {
+  if(event.key !== 'Escape') return;
+  document.querySelectorAll('.download-menu[open]').forEach(menu => {
+    if(menu.contains(document.activeElement)) menu.querySelector('summary').focus();
+    menu.open = false;
+  });
+});
 document.getElementById('brand').addEventListener('change', ()=>{
   selectedImage = null;
   updateStepIndicator();
