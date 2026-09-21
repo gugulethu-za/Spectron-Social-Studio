@@ -41,11 +41,12 @@ console.log('PASS: mobile-size horizontal/vertical panning, automatic pan room, 
 for(const match of fs.readFileSync('spectron-social-studio.html','utf8').matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)) new vm.Script(match[1]);
 function el(){return {textContent:'',style:{},classList:{add(){}},append(){},replaceChildren(){},scrollIntoView(){},close(){},showModal(){},getAttribute(){return 'product.png'}};}
 const rows=new Map();let selected=[];let clipboard='';
-const db={transaction(store,mode){const tx={};tx.objectStore=()=>({put(ad){rows.set(ad.id,structuredClone(ad));},getAll(){const r={};queueMicrotask(()=>{r.result=[...rows.values()];r.onsuccess();});return r;}});if(mode==='readwrite')setTimeout(()=>tx.oncomplete(),0);return tx;}};
+const db={transaction(store,mode){const tx={};tx.objectStore=()=>({put(ad){rows.set(ad.id,structuredClone(ad));},getAll(){const r={};queueMicrotask(()=>{r.result=store==='ads'?[...rows.values()]:[];r.onsuccess();});return r;}});if(mode==='readwrite')setTimeout(()=>tx.oncomplete(),0);return tx;}};
 const context=vm.createContext({console,structuredClone,crypto:require('node:crypto').webcrypto,setTimeout,
  indexedDB:{open(){const r={};queueMicrotask(()=>{r.result=db;r.onsuccess()});return r;}},
  document:{getElementById(id){if(!elements.has(id))elements.set(id,el());return elements.get(id);},querySelector(){return el()},querySelectorAll(){return selected;},createElement:el},
  navigator:{clipboard:{async writeText(t){clipboard=t}}},
+ brandImageRecords:[],renderImageGallery(){},
  currentVariants:[{headline:'Edited headline',body:'Same exact body',cta:'Shop now',hashtags:['toy']}],currentBrand:'Bluey',currentProduct:'Toy',currentPlatform:'Instagram / Facebook post',currentFormat:'1080x1080',selectedImage:'product.png',variantVisuals:[{imgScale:1.4,imgPosX:35,imgPosY:60,textScale:1.2}],SPECTRON_LOGO_SRC:'logo.png',
  updateFormatOptions(){},renderResults(){},selectVariant(){},applyImageTransform(){},applyTextScale(){}
 });

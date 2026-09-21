@@ -7,9 +7,17 @@ const AD_CHANNELS = [
 ];
 let savedAds = [], duplicateSource = null, duplicateBusy = false;
 const adDatabase = new Promise((resolve, reject) => {
-  const request = indexedDB.open('spectron-saved-ads', 1);
-  request.onupgradeneeded = () => request.result.createObjectStore('ads', {keyPath:'id'});
-  request.onsuccess = () => resolve(request.result);
+  const request = indexedDB.open('spectron-saved-ads', 2);
+  request.onupgradeneeded = () => {
+    const db = request.result;
+    if(!db.objectStoreNames.contains('ads')) db.createObjectStore('ads', {keyPath:'id'});
+    if(!db.objectStoreNames.contains('brandImages')) db.createObjectStore('brandImages', {keyPath:'id'});
+  };
+  request.onsuccess = () => {
+    request.result.onversionchange = () => request.result.close();
+    resolve(request.result);
+  };
+  request.onblocked = () => studioNotice('Sluit andere Spectron-tabbladen om de beeldbibliotheek bij te werken.');
   request.onerror = () => reject(request.error);
 });
 function studioNotice(message){ document.getElementById('studioStatus').textContent = message; }
@@ -126,6 +134,7 @@ function openSavedAd(id){
   updateFormatOptions(); document.getElementById('format').value = ad.format;
   currentBrand = ad.brand;
   selectedImage = ad.image;
+  if(typeof syncBackgroundImage === 'function') syncBackgroundImage();
   renderResults([{...structuredClone(ad.variant),_savedId:ad.id}], ad.platform, ad.product, false);
   variantVisuals[0] = structuredClone(ad.visual);
   selectVariant(0); applyImageTransform(); applyTextScale();
@@ -140,3 +149,35 @@ async function copyAdText(idx){
   }catch(e){ studioNotice('Kopiëren niet toegestaan. Geef klembordtoegang of selecteer en kopieer de tekst handmatig.'); }
 }
 refreshSavedAds().catch(() => studioNotice('Browseropslag is niet beschikbaar. Opgeslagen advertenties kunnen niet worden geladen.'));
+
+// Brand images share the existing IndexedDB database with saved advertisements.
+async function refreshBrandImages(){
+  const db = await adDatabase;
+  const records = await new Promise((resolve,reject) => {
+    const request = db.transaction('brandImages').objectStore('brandImages').getAll();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+  brandImageRecords = records.sort((a,b) => b.createdAt.localeCompare(a.createdAt));
+  renderImageGallery();
+}
+async function persistBrandImage(record){
+  const db = await adDatabase;
+  const saved = await new Promise((resolve,reject) => {
+    // The read and write share a transaction, so repeated accepts cannot insert duplicates.
+    const tx = db.transaction('brandImages','readwrite');
+    const store = tx.objectStore('brandImages');
+    let result;
+    tx.oncomplete = () => resolve(result);
+    tx.onerror = tx.onabort = () => reject(tx.error || new Error('Opslaan mislukt'));
+    const request = store.getAll();
+    request.onsuccess = () => {
+      result = request.result.find(item => item.brand === record.brand && item.image === record.image);
+      if(!result) { result = record; store.put(record); }
+    };
+  });
+  // Update the existing gallery model only after the transaction commits.
+  if(!brandImageRecords.some(item => item.id === saved.id)) brandImageRecords.unshift(saved);
+  return saved;
+}
+refreshBrandImages().catch(() => studioNotice('Merkbeelden konden niet worden geladen. Controleer browseropslag en vernieuw de pagina.'));

@@ -1115,6 +1115,8 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .mock-social .canvas .headline-on-image{position:absolute;left:7%;right:7%;bottom:7%;overflow-wrap:anywhere;max-width:100%;}
 .mock-social .canvas.vertical-canvas .headline-on-image{right:18%;bottom:22%;}
 .mock-social .caption{font-size:15px;line-height:1.5;}
+.ai-image-badge{position:absolute;top:6px;left:6px;z-index:1;padding:2px 6px;background:#aa071b;color:#fff;font-size:11px;font-weight:700;border-radius:3px;}
+[hidden]{display:none!important;}
 </style>
 </head>
 <body>
@@ -1172,6 +1174,18 @@ button:disabled{opacity:.5;cursor:not-allowed;}
           <input type="file" id="uploadInput" accept="image/*">
         </label>
         <p class="img-hint">Upload een merk- of productbeeld voor de advertentie.</p>
+        <button type="button" class="upload-btn" id="backgroundButton" onclick="openBackground()" hidden>AI Background</button>
+        <div id="backgroundPanel" hidden style="margin-top:12px;">
+          <label for="backgroundDescription">Beschrijf de gewenste achtergrond</label>
+          <input type="text" id="backgroundDescription" maxlength="1000" placeholder="Snowy landscape, Sunny beach, Modern office, Rainy city">
+          <p class="img-hint">Alleen de achtergrond wordt aangepast. Controleer het onderwerp in de preview.</p>
+          <button type="button" class="upload-btn" id="backgroundGenerate" onclick="generateBackground()">Generate</button>
+          <p id="backgroundStatus" role="status" aria-live="polite"></p>
+          <p id="backgroundError" role="alert" style="color:var(--red,#aa071b);"></p>
+          <img id="backgroundPreview" alt="Preview van de gegenereerde achtergrond" hidden style="max-width:100%;max-height:320px;object-fit:contain;">
+          <button type="button" class="upload-btn" id="backgroundAccept" onclick="acceptBackground()" hidden>Afbeelding gebruiken</button>
+          <button type="button" class="upload-btn" id="backgroundRestore" onclick="restoreBackground()">Terug naar origineel</button>
+        </div>
         <label class="upload-btn">
           <span class="icon">＋</span> <span id="libraryUploadLabel">Fotobibliotheek van geselecteerd merk updaten</span>
           <input type="file" id="libraryUploadInput" accept="image/*" multiple>
@@ -1666,6 +1680,7 @@ async function downloadTikTokVideo(idx){
 
 let uploadedImages = [];
 const uploadedLibraryImages = {};
+let brandImageRecords = [];
 let selectedImage = null;
 let imgScale = 1;
 let imgPosX = 50;
@@ -1775,11 +1790,13 @@ function renderImageGallery(){
   const gallery = document.getElementById('imgGallery');
   const defaults = brand ? (BRAND_IMAGES[brand] || []) : [];
   const brandUploads = brand ? (uploadedLibraryImages[brand] || []) : [];
-  const all = [...uploadedImages, ...brandUploads, ...defaults];
+  const savedImages = brandImageRecords.filter(image => !image.brand || image.brand === brand);
+  const all = [...new Set([...savedImages.map(image => image.image), ...uploadedImages, ...brandUploads, ...defaults])];
 
   if(!all.length){
     gallery.innerHTML = ``;
     selectedImage = null;
+    if(typeof syncBackgroundImage === 'function') syncBackgroundImage();
     return;
   }
 
@@ -1787,8 +1804,10 @@ function renderImageGallery(){
     selectedImage = all[0];
   }
 
+  if(typeof syncBackgroundImage === 'function') syncBackgroundImage();
   gallery.innerHTML = all.map((src, i) => `
     <div class="img-thumb ${src === selectedImage ? 'selected' : ''}" data-src="${escapeHtml(src)}" onclick="selectImage('${escapeHtml(src).replace(/'/g,"\\'")}')">
+      ${savedImages.some(image => image.image === src && image.source === "ai-background") ? '<span class="ai-image-badge" aria-label="AI-generated image">AI</span>' : ''}
       <img src="${escapeHtml(src)}" alt="Productbeeld ${i+1}" loading="lazy" onerror="this.parentElement.classList.add('loading-thumb'); this.parentElement.innerHTML='geen preview';">
     </div>
   `).join('');
@@ -1803,6 +1822,7 @@ function selectImage(src){
   selectedImage = src;
   renderImageGallery();
   document.querySelectorAll('.product-img').forEach(img => { img.src = src; });
+  document.querySelectorAll('.card [style*="background-image"]').forEach(el => { el.style.backgroundImage = `url("${src}")`; });
   variantVisuals.forEach((settings, idx) => {
     document.querySelectorAll(`.card[data-variant-index="${idx}"] .product-img`).forEach(img => {
       img.style.transform = `scale(${settings.imgScale})`;
@@ -2279,6 +2299,7 @@ updateStepIndicator();
 updateFormatOptions();
 renderImageGallery();
 </script>
+<script src="ai-background.js"></script>
 <script src="studio-library.js"></script>
 </body>
 </html>

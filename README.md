@@ -138,3 +138,39 @@ netlify deploy --prod
 ```
 
 This updates the live site. Open the production URL printed in the terminal and test generation. See the [Netlify deploy command reference](https://cli.netlify.com/commands/deploy/) for details.
+
+## AI Background
+
+Select a gallery image or upload a PNG, JPEG, or WebP (up to 3 MB), then click
+**AI Background**. Describe the background and click **Generate**. Review the
+preview, choose **Afbeelding gebruiken**, **Opnieuw genereren**, or **Terug naar origineel**.
+Regeneration always starts from the original image. Gemini is instructed to preserve
+the subject, but review fine details before accepting. Accepted images use the existing
+ad preview, save, duplicate, and download flows.
+
+No additional dependencies or environment variables are required. The new Netlify
+function reuses server-side `GEMINI_API_KEY` and the existing Gemini REST integration,
+using `gemini-2.5-flash-image`. The Google project must have access and quota for this
+image model (billing may be required). Run through Netlify Dev as described above.
+
+Run `node test-ai-background.cjs` for mocked API and editor lifecycle checks, alongside
+`node test-studio-library.cjs`. No lint or TypeScript configuration is present.
+
+### Accepted AI images in Brand Images
+
+**Afbeelding gebruiken** saves the generated image to the selected brand's image
+library and selects it immediately. Saved AI thumbnails have a small **AI** badge
+and remain available after refresh in this browser and site address. Images accepted
+without a selected brand remain available across brands, like standalone uploads.
+Repeated acceptance does not create duplicate images. Restoring the original does
+not save an unaccepted preview or delete an image that was already accepted.
+
+AI image records include a unique ID, source, background prompt, creation timestamp,
+and original image reference. They use a new store in the existing IndexedDB
+saved-ad database; the upgrade preserves saved ads. Clearing browser site data
+removes saved ads and AI images. Existing ordinary uploads remain session-only.
+If storage is unavailable or full, an error appears and the preview remains for retry.
+Close older Spectron tabs if a database upgrade is blocked.
+
+Run `node test-brand-images.cjs` for persistence, gallery selection, duplicate
+prevention, and advertisement rendering checks, in addition to the two existing tests.
