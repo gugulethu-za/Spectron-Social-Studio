@@ -1971,7 +1971,30 @@ function escapeHtml(str){
     .replace(/>/g,"&gt;");
 }
 
+let adGenerationInProgress = false;
+function setAdGenerationState(generating){
+  adGenerationInProgress = generating;
+  const btn = document.getElementById('generateBtn');
+  const resultsArea = document.getElementById('resultsArea');
+  btn.disabled = generating;
+  btn.setAttribute('aria-busy', String(generating));
+  resultsArea.setAttribute('aria-busy', String(generating));
+  btn.innerHTML = generating ? 'Generating…' : 'Genereer advertentie <span class="arrow">→</span>';
+  if(generating){
+    document.getElementById('downloadAllBtn').style.display = 'none';
+    document.getElementById('imgAdjust').style.display = 'none';
+    document.getElementById('outputMeta').textContent = 'Generating…';
+    resultsArea.innerHTML = `<div class="loading" id="adGenerationLoading">
+      <p id="adGenerationStatus" role="status" aria-live="polite">Generating your advertisements…</p>
+      <div class="bar" role="progressbar" aria-labelledby="adGenerationStatus"></div>
+    </div>`;
+  }else{
+    document.getElementById('adGenerationLoading')?.remove();
+  }
+}
+
 async function generateAds(){
+  if(adGenerationInProgress) return;
   const brand = document.getElementById('brand').value;
   const product = brand ? `${brand} collectie` : "";
   const platform = document.getElementById('platform').value;
@@ -1980,7 +2003,6 @@ async function generateAds(){
   const usps = getSelectedUSPs();
   const promo = document.getElementById('promo').value.trim();
   const count = parseInt(document.getElementById('variantCount').value, 10);
-  const btn = document.getElementById('generateBtn');
   const resultsArea = document.getElementById('resultsArea');
   const outputMeta = document.getElementById('outputMeta');
 
@@ -1989,19 +2011,12 @@ async function generateAds(){
     return;
   }
 
-  btn.disabled = true;
-  btn.innerHTML = 'Bezig met genereren…';
-  document.getElementById('downloadAllBtn').style.display = 'none';
-  document.getElementById('imgAdjust').style.display = 'none';
-  resultsArea.innerHTML = `
-    <div class="loading">
-      <p>SCHRIJFT ${count} VARIANT${count>1?'EN':''} VOOR "${escapeHtml(platform.toUpperCase())}"…</p>
-      <div class="bar"></div>
-    </div>`;
+  setAdGenerationState(true);
 
-  const limits = PLATFORM_LIMITS[platform];
+  try{
+    const limits = PLATFORM_LIMITS[platform];
 
-  const systemPrompt = `Je bent social copywriter voor Spectron Toys, een Nederlandse speelgoedleverancier en distributeur sinds 1982. Schrijf voor het geselecteerde speelgoedmerk "${brand}". Respecteer de eigen merkwereld, doelgroep en tone of voice van dit merk. Spectrons overkoepelende waarden zijn kwalitatief, innovatief en leerzaam speelgoed met plezier, fantasie en een WoW-effect. Verzin geen productclaims, prijzen, keurmerken, licenties of eigenschappen die niet in de briefing staan.
+    const systemPrompt = `Je bent social copywriter voor Spectron Toys, een Nederlandse speelgoedleverancier en distributeur sinds 1982. Schrijf voor het geselecteerde speelgoedmerk "${brand}". Respecteer de eigen merkwereld, doelgroep en tone of voice van dit merk. Spectrons overkoepelende waarden zijn kwalitatief, innovatief en leerzaam speelgoed met plezier, fantasie en een WoW-effect. Verzin geen productclaims, prijzen, keurmerken, licenties of eigenschappen die niet in de briefing staan.
 
 Schrijf ${count} duidelijk verschillende advertentievariant(en) in het Nederlands voor het platform "${platform}" en formaat "${format.label}", voor merk "${brand}" en producttype "${product}".
 Toon: ${tone}.
@@ -2018,7 +2033,6 @@ Antwoord UITSLUITEND met geldige JSON, geen markdown, geen uitleg, geen backtick
 {"variants":[{"headline":"...","body":"...","cta":"...","hashtags":["...","..."]}]}
 Als hashtags niet van toepassing zijn voor dit platform, geef een lege array terug.`;
 
-  try{
     const response = await fetch("/.netlify/functions/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -2049,24 +2063,25 @@ Als hashtags niet van toepassing zijn voor dit platform, geef een lege array ter
       else{ throw new Error("Kon het antwoord niet interpreteren als JSON."); }
     }
 
+    if(!Array.isArray(parsed.variants) || !parsed.variants.length) throw new Error('Geen varianten ontvangen.');
     currentBrand = brand;
-    renderResults(parsed.variants || [], platform, product, false);
+    renderResults(parsed.variants, platform, product, false);
     outputMeta.textContent = `${(parsed.variants||[]).length} variant(en) · ${platform}`;
 
   }catch(err){
     // Live AI-generatie niet bereikbaar (bv. tool lokaal geopend zonder Netlify) — val terug op ingebouwde generator
     try{
       const offlineVariants = generateOffline(brand, product, platform, tone, usps, promo, count);
+      if(!Array.isArray(offlineVariants) || !offlineVariants.length) throw new Error('Geen varianten ontvangen.');
       currentBrand = brand;
       renderResults(offlineVariants, platform, product, true);
       outputMeta.textContent = `${offlineVariants.length} variant(en) · ${platform} · offline modus`;
     }catch(fallbackErr){
-      resultsArea.innerHTML = `<div class="error-box"><b>Er ging iets mis:</b> ${escapeHtml(err.message)}. Probeer het opnieuw.</div>`;
+      resultsArea.innerHTML = `<div class="error-box"><b>Er ging iets mis:</b> ${escapeHtml(err.message)}. Probeer het opnieuw. <button type="button" class="card-dl-btn" onclick="generateAds()">Opnieuw proberen</button></div>`;
       outputMeta.textContent = "mislukt";
     }
   }finally{
-    btn.disabled = false;
-    btn.innerHTML = 'Genereer advertentie <span class="arrow">→</span>';
+    setAdGenerationState(false);
   }
 }
 
@@ -2264,6 +2279,7 @@ document.getElementById('brand').addEventListener('change', ()=>{
     : 'Fotobibliotheek van geselecteerd merk updaten';
 });
 function reformatCurrentAds(){
+  if(adGenerationInProgress) return;
   if(!currentVariants.length) return;
   const visuals = structuredClone(variantVisuals);
   renderResults(currentVariants,document.getElementById('platform').value,currentProduct,false);
