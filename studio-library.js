@@ -132,6 +132,7 @@ function openSavedAd(id){
   document.getElementById('platform').value = ad.platform;
   updateFormatOptions(); document.getElementById('format').value = ad.format;
   currentBrand = ad.brand;
+  renderImageGallery();
   selectedImage = ad.image;
   if(typeof syncBackgroundImage === 'function') syncBackgroundImage();
   renderResults([{...structuredClone(ad.variant),_savedId:ad.id}], ad.platform, ad.product, false);

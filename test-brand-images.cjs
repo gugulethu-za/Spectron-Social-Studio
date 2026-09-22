@@ -18,7 +18,7 @@ function session(){
  const elements=new Map();const el=id=>{if(!elements.has(id)) elements.set(id,{value:'',style:{},textContent:'',innerHTML:'',classList:{add(){}},append(){},replaceChildren(){},scrollIntoView(){},getAttribute(){return context.selectedImage;}});return elements.get(id);};
  el('brand').value='Bluey';
  const context=vm.createContext({console,structuredClone,indexedDB,crypto:require('node:crypto').webcrypto,
-  document:{getElementById:el,createElement:()=>el(Symbol()),querySelector:()=>el('image'),querySelectorAll:()=>[]},
+  document:{getElementById:el,createElement:()=>el(Symbol()),querySelector:()=>el('image'),querySelectorAll:selector=>selector === '.gallery-arrow' ? [el('prevArrow'),el('nextArrow')] : []},
   brandImageRecords:[],uploadedImages:[],uploadedLibraryImages:{},BRAND_IMAGES:{Bluey:['original.png'],Stitch:['stitch.png']},selectedImage:'original.png',currentBrand:'Bluey',variantVisuals:[],
   escapeHtml:value=>String(value).replaceAll('"','&quot;'),SPECTRON_LOGO_SRC:'logo.png',selectVariant(){},applyImageTransform(){},applyTextScale(){},
   canvasResizeObserver:{disconnect(){},observe(){}},imgScale:1,imgPosX:50,imgPosY:50,DEFAULT_TEXT_SCALE:1.5,
@@ -33,15 +33,36 @@ function session(){
 }
 (async()=>{
  let {context,run,el}=session();await run('refreshBrandImages()');
+ const arrowsHidden=expected=>{
+  assert.equal(el('prevArrow').hidden,expected);
+  assert.equal(el('nextArrow').hidden,expected);
+ };
+ assert.equal([...page.matchAll(/<button[^>]*class="gallery-arrow (?:prev|next)"[^>]* hidden/g)].length,2,'Both arrows hidden before JavaScript runs');
+ el('brand').value='';run('renderImageGallery()');arrowsHidden(true);
+ context.BRAND_IMAGES.Bluey=[];el('brand').value='Bluey';run('renderImageGallery()');arrowsHidden(true);
+ context.BRAND_IMAGES.Bluey=['original.png'];run('renderImageGallery()');arrowsHidden(true);
+ context.BRAND_IMAGES.Bluey=['original.png','second.png'];run('renderImageGallery()');arrowsHidden(false);
+ el('brand').value='Stitch';run('renderImageGallery()');arrowsHidden(true);
+ el('brand').value='Bluey';run('renderImageGallery()');arrowsHidden(false);
+ el('brand').value='';context.uploadedImages=['upload-a.png','upload-b.png'];run('renderImageGallery()');arrowsHidden(true);
+ el('brand').value='invalid';run('renderImageGallery()');arrowsHidden(true);
+ el('brand').value='Bluey';context.BRAND_IMAGES.Bluey=['original.png'];context.uploadedImages=[];
+ run('renderImageGallery()');arrowsHidden(true);
+ context.uploadedImages=['upload-a.png'];run('renderImageGallery()');arrowsHidden(false);
+ context.uploadedImages=[];run('renderImageGallery()');arrowsHidden(true);
+ const scrolls=[];el('imgGallery').clientWidth=400;el('imgGallery').scrollBy=options=>scrolls.push(options);
+ run('scrollGallery(-1);scrollGallery(1)');
+ assert.deepEqual(scrolls.map(item=>item.left),[-312,312]);
+ assert.ok(scrolls.every(item=>item.behavior==='smooth'));
  assert.equal(version,2);assert.equal(stores.get('ads').size,1,'Upgrade preserves saved advertisements');
  const image='data:image/png;base64,YWJj';
  context.record={id:require('node:crypto').randomUUID(),brand:'Bluey',image,source:'ai-background',prompt:'Snow',createdAt:new Date().toISOString(),originalImage:'original.png',originalImageId:null};
  await run('Promise.all([persistBrandImage(record),persistBrandImage({...record,id:crypto.randomUUID()})])');
  assert.equal(stores.get('brandImages').size,1);assert.equal(context.brandImageRecords.length,1);
- run('selectImage(record.image)');assert.equal(context.selectedImage,image);
+ run('selectImage(record.image)');assert.equal(context.selectedImage,image);arrowsHidden(false);
  assert.match(el('imgGallery').innerHTML,/ai-image-badge/);assert.ok(el('imgGallery').innerHTML.includes(image));
  ({context,run,el}=session());await run('refreshBrandImages()');
- assert.equal(context.brandImageRecords.length,1);assert.equal(context.brandImageRecords[0].prompt,'Snow');
+ assert.equal(context.brandImageRecords.length,1);assert.equal(context.brandImageRecords[0].prompt,'Snow');arrowsHidden(false);
  run('selectImage(brandImageRecords[0].image)');assert.equal(context.selectedImage,image);
  for(const source of [image,'uploaded.png','spectron-logo.webp',null]){
  context.selectedImage=source;
@@ -60,5 +81,6 @@ function session(){
  failWrites=true;context.record={id:'failed',brand:'Stitch',image:'failed.png'};
  await assert.rejects(run('persistBrandImage(record)'));
  assert.equal(stores.get('brandImages').size,1);assert.equal(context.brandImageRecords.length,1);
+ console.log('PASS: gallery arrows on initial load, empty/single/multiple images, brand switch/reset, uploads, accepted AI image, refresh, unchanged scrolling');
  console.log('PASS: database upgrade, committed saves, transactional deduplication, refresh persistence, AI thumbnail, brand scope, selection, all ad renderers, saved ad image, storage failure');
 })().catch(error=>{console.error(error);process.exitCode=1;});

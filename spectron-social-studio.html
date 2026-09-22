@@ -1148,9 +1148,9 @@ button:disabled{opacity:.5;cursor:not-allowed;}
       <div class="img-field">
         <label class="title" style="font-size:15px;">Merkbeelden</label>
         <div class="gallery-wrap">
-          <button type="button" class="gallery-arrow prev" onclick="scrollGallery(-1)" aria-label="Vorige beelden">‹</button>
+          <button type="button" class="gallery-arrow prev" hidden onclick="scrollGallery(-1)" aria-label="Vorige beelden">‹</button>
           <div class="img-gallery" id="imgGallery"></div>
-          <button type="button" class="gallery-arrow next" onclick="scrollGallery(1)" aria-label="Volgende beelden">›</button>
+          <button type="button" class="gallery-arrow next" hidden onclick="scrollGallery(1)" aria-label="Volgende beelden">›</button>
         </div>
         <label class="upload-btn">
           <span class="icon">⤒</span> Eigen foto uploaden
@@ -1768,6 +1768,8 @@ function renderImageGallery(){
   const savedImages = brandImageRecords.filter(image => !image.brand || image.brand === brand);
   const all = [...new Set([...savedImages.map(image => image.image), ...uploadedImages, ...brandUploads, ...defaults])];
 
+  updateGalleryArrowVisibility(brand, all.length);
+
   if(!all.length){
     gallery.innerHTML = ``;
     selectedImage = null;
@@ -1786,6 +1788,11 @@ function renderImageGallery(){
       <img src="${escapeHtml(src)}" alt="Productbeeld ${i+1}" loading="lazy" onerror="this.parentElement.classList.add('loading-thumb'); this.parentElement.innerHTML='geen preview';">
     </div>
   `).join('');
+}
+
+function updateGalleryArrowVisibility(brand, imageCount){
+  const hidden = !brand || !Object.prototype.hasOwnProperty.call(BRAND_IMAGES, brand) || imageCount < 2;
+  document.querySelectorAll('.gallery-arrow').forEach(arrow => { arrow.hidden = hidden; });
 }
 
 function scrollGallery(direction){
