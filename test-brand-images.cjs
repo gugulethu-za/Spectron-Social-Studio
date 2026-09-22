@@ -22,7 +22,7 @@ function session(){
   brandImageRecords:[],uploadedImages:[],uploadedLibraryImages:{},BRAND_IMAGES:{Bluey:['original.png'],Stitch:['stitch.png']},selectedImage:'original.png',currentBrand:'Bluey',variantVisuals:[],
   escapeHtml:value=>String(value).replaceAll('"','&quot;'),SPECTRON_LOGO_SRC:'logo.png',selectVariant(){},applyImageTransform(){},applyTextScale(){},
   canvasResizeObserver:{disconnect(){},observe(){}},imgScale:1,imgPosX:50,imgPosY:50,DEFAULT_TEXT_SCALE:1.5,
-  getFormatSpec(){return {width:1080,height:context.testHeight,value:`1080x${context.testHeight}`};},
+  getFormatSpec(){return {width:context.testWidth || 1080,height:context.testHeight,value:`${context.testWidth || 1080}x${context.testHeight}`};},
   PLATFORM_LIMITS:{'Instagram / Facebook post':{mock:'social'},'Instagram / Facebook story':{mock:'social'},TikTok:{mock:'social'},'Google Ads (zoekadvertentie)':{mock:'google'},LinkedIn:{mock:'linkedin'}}
  });
  const run=code=>vm.runInContext(code,context);
@@ -43,11 +43,17 @@ function session(){
  ({context,run,el}=session());await run('refreshBrandImages()');
  assert.equal(context.brandImageRecords.length,1);assert.equal(context.brandImageRecords[0].prompt,'Snow');
  run('selectImage(brandImageRecords[0].image)');assert.equal(context.selectedImage,image);
- for(const [platform,height] of [['Instagram / Facebook post',1080],['Instagram / Facebook post',1350],['Instagram / Facebook story',1920],['TikTok',1920],['Google Ads (zoekadvertentie)',1080],['LinkedIn',1080]]){
-  context.testHeight=height;context.platform=platform;
-  run("renderResults([{headline:'AI ad',body:'Body',cta:'Shop'}],platform,'Toy',false)");
-  assert.ok(el('resultsArea').innerHTML.includes(image),platform+' renders persisted image');
-  assert.equal(run('snapshotAd(0).image'),image,platform+' saves selected image');
+ for(const source of [image,'uploaded.png','spectron-logo.webp',null]){
+ context.selectedImage=source;
+ for(const [platform,height,width] of [['Instagram / Facebook post',1080],['Instagram / Facebook post',1350],['Instagram / Facebook post',628,1200],['Instagram / Facebook story',1920],['TikTok',1920],['Google Ads (zoekadvertentie)',1080],['LinkedIn',1080]]){
+  context.testWidth=width;context.testHeight=height;context.platform=platform;
+  run("renderResults(Array.from({length:4},()=>({headline:'Spectron ad',body:'Body',cta:'Shop'})),platform,'Toy',false)");
+  if(source) assert.ok(el('resultsArea').innerHTML.includes(source),platform+' preserves image pixels/source');
+  assert.doesNotMatch(el('resultsArea').innerHTML,/ad-logo|saved-logo|ai-image-badge/);
+  for(let i=0;i<4;i++) assert.ok(el('resultsArea').innerHTML.includes('cardVisual-'+i));
+  assert.match(el('resultsArea').innerHTML,/Spectron ad/);
+  assert.equal(run('snapshotAd(0).image'),source,platform+' saves selected image');
+ }
  }
  el('brand').value='Stitch';context.selectedImage=null;run('renderImageGallery()');
  assert.ok(!el('imgGallery').innerHTML.includes(image),'Brand images stay with their brand');

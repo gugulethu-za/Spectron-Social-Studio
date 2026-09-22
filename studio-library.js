@@ -114,7 +114,6 @@ async function refreshSavedAds(){
       preview.append(img);
     }
     const shade = document.createElement('div'); shade.className = 'saved-shade'; preview.append(shade);
-    const logo = document.createElement('img'); logo.src = SPECTRON_LOGO_SRC; logo.alt = 'Spectron'; logo.className = 'saved-logo'; preview.append(logo);
     const headline = document.createElement('strong'); headline.textContent = ad.variant.headline;
     headline.style.fontSize = `${18 * ad.visual.textScale}px`;
     if(h/w > 1.5){ preview.classList.add('saved-vertical'); }

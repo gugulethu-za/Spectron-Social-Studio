@@ -39,7 +39,7 @@ vm.runInContext('onImageAdjust()',positionContext);
 assert.equal(positionContext.variantVisuals[0].imgScale,1,'Reset must retain 100% zoom');
 console.log('PASS: mobile-size horizontal/vertical panning, automatic pan room, crop preservation, reset');
 for(const match of fs.readFileSync('spectron-social-studio.html','utf8').matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)) new vm.Script(match[1]);
-function el(){return {textContent:'',style:{},classList:{add(){}},append(){},replaceChildren(){},scrollIntoView(){},close(){},showModal(){},getAttribute(){return 'product.png'}};}
+function el(){return {textContent:'',style:{},classList:{add(){}},children:[],append(...nodes){this.children.push(...nodes)},replaceChildren(){this.children=[]},scrollIntoView(){},close(){},showModal(){},getAttribute(){return 'product.png'}};}
 const rows=new Map();let selected=[];let clipboard='';
 const db={transaction(store,mode){const tx={};tx.objectStore=()=>({put(ad){rows.set(ad.id,structuredClone(ad));},getAll(){const r={};queueMicrotask(()=>{r.result=store==='ads'?[...rows.values()]:[];r.onsuccess();});return r;}});if(mode==='readwrite')setTimeout(()=>tx.oncomplete(),0);return tx;}};
 const context=vm.createContext({console,structuredClone,crypto:require('node:crypto').webcrypto,setTimeout,
@@ -74,6 +74,12 @@ vm.runInContext(fs.readFileSync('studio-library.js','utf8'),context);
  await vm.runInContext('saveAd(0)',context);const n=rows.size;
  context.currentVariants[0].headline='Updated saved headline';await vm.runInContext('saveAd(0)',context);assert.equal(rows.size,n);
  await vm.runInContext('refreshSavedAds()',context);assert.equal(vm.runInContext('savedAds.length',context),n);
+ for(const item of elements.get('savedAds').children){
+  const preview=item.children[1];
+  assert.equal(preview.children.filter(node=>node.src).length,1);
+  assert.equal(preview.children[0].src,'product.png');
+  assert.ok(preview.children.every(node=>! /logo|ai-image-badge/.test(node.className || '')));
+ }
  await vm.runInContext('copyAdText(0)',context);assert.equal(clipboard,'Updated saved headline\n\nSame exact body\n\nShop now\n\n#toy');
  console.log('PASS: batches of 2/3/4, unique IDs, format dimensions, content/image/style preservation, save updates, library reload, clipboard text');
  selected=[{value:'0'},{value:'3'}];

@@ -80,7 +80,7 @@ Local verification:
 1. Generate an ad and edit its headline, body, and image positioning.
 2. Save, refresh, and reopen it; check that the content and adjustments survived.
 3. Duplicate into two, three, then four formats; inspect each preview and reopen it.
-4. Download the images and check their pixel dimensions; inspect vertical text/logo margins.
+4. Download the images and check their pixel dimensions; inspect vertical text margins and confirm no logo overlay or AI badge is added.
 5. Copy text into a text editor and copy an image into an app that accepts pasted images.
 6. Edit a saved ad and save again; its existing library entry should update.
 
