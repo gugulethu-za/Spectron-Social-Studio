@@ -87,6 +87,12 @@ async function confirmDuplicate(){
   }catch(e){ document.getElementById('duplicateStatus').textContent = 'Opslaan kon niet worden bevestigd. Controleer de opgeslagen advertenties voordat je opnieuw probeert.'; }
   finally{ duplicateBusy = false; updateDuplicateCount(); }
 }
+function toggleSavedAds(){
+  const panel = document.getElementById('savedAdsPanel');
+  panel.hidden = !panel.hidden;
+  document.getElementById('savedLibraryToggle').setAttribute('aria-expanded', String(!panel.hidden));
+  document.getElementById('savedLibraryChevron').textContent = panel.hidden ? '\u25be' : '\u25b4';
+}
 async function refreshSavedAds(){
   const db = await adDatabase;
   savedAds = await new Promise((resolve,reject) => {
@@ -122,7 +128,8 @@ async function refreshSavedAds(){
     const cta = document.createElement('p'); cta.textContent = ad.variant.cta;
     const button = document.createElement('button'); button.className = 'card-dl-btn'; button.textContent = 'Openen en bewerken';
     button.onclick = () => openSavedAd(ad.id);
-    item.append(title,preview,body,cta,button); grid.append(item);
+    const actions = document.createElement('div'); actions.className = 'library-actions'; actions.append(button);
+    item.append(title,preview,body,cta,actions); grid.append(item);
   }
 }
 function openSavedAd(id){

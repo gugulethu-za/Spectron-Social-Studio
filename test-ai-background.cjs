@@ -2,6 +2,14 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
 const {handler} = require('./netlify/functions/generate-ai-image.cjs');
+const page = fs.readFileSync('spectron-social-studio.html','utf8');
+const actions = page.match(/<div class="background-actions">([\s\S]*?)<\/div>/)[1];
+assert.match(actions, /id="backgroundAccept"[^>]*onclick="acceptBackground\(\)"[\s\S]*id="backgroundRestore"[^>]*onclick="restoreBackground\(\)"[\s\S]*id="libraryUploadInput"/);
+assert.equal((actions.match(/class="upload-btn"/g)||[]).length,3);
+assert.doesNotMatch(actions,/<br\b/);
+assert.match(page,/\.img-field \.background-actions\{[^}]*display:flex;flex-direction:column;gap:12px;background:transparent;width:100%/);
+assert.match(page,/\.background-actions>\.upload-btn\{width:100%;margin:0;padding:11px;box-sizing:border-box;/);
+assert.match(page,/#backgroundPanel\[hidden\]\+\.background-actions #backgroundRestore\{display:none;/);
 const image = 'data:image/png;base64,iVBORw0KGgo=';
 const event = data => ({httpMethod:'POST',body:JSON.stringify(data)});
 (async () => {
@@ -38,6 +46,7 @@ const event = data => ({httpMethod:'POST',body:JSON.stringify(data)});
   global.fetch=async()=>{throw Object.assign(new Error(),{name:'TimeoutError'});};
   assert.match(JSON.parse((await handler(event({image,description:'Beach'}))).body).error,/lang/);
  } finally { global.fetch=originalFetch; if(originalKey===undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY=originalKey; }
+ console.log('PASS: three separate ordered action controls, scoped transparent 12px vertical gaps, full-width padding, original handlers');
  console.log('PASS: API validation, size limit, server key, Gemini request, success, quota, errors, empty output, timeout');
  const elements = new Map();
  const el = id => {if(!elements.has(id)) elements.set(id,{value:'',hidden:false,disabled:false,textContent:'',setAttribute(){},removeAttribute(){},focus(){}}); return elements.get(id);};
@@ -94,5 +103,17 @@ const event = data => ({httpMethod:'POST',body:JSON.stringify(data)});
  assert.equal(el('backgroundPreview').hidden,false);assert.equal(el('backgroundAccept').disabled,false);
  assert.match(el('backgroundError').textContent,/browseropslag/);
  console.log('PASS: acceptance metadata, repeat prevention, confirmation, restore without saving, storage failure retains preview');
+ let uploadHandler, galleryRenders=0;
+ const uploadContext=vm.createContext({Promise,Array,uploadedLibraryImages:{},alert:message=>assert.fail(message),
+  document:{getElementById:id=>id==='brand'?{value:'Gear2Play'}:{addEventListener(type,handler){uploadHandler=handler;}}},
+  FileReader:class {readAsDataURL(file){this.onload({target:{result:file.data}});}},
+  renderImageGallery(){galleryRenders++;}
+ });
+ vm.runInContext(page.slice(page.indexOf("document.getElementById('libraryUploadInput').addEventListener"),page.indexOf('const USP_LABELS =')),uploadContext);
+ const uploadEvent={target:{files:[{data:image}],value:'photo.png'}};
+ uploadHandler(uploadEvent);await Promise.resolve();await Promise.resolve();
+ assert.equal(uploadContext.uploadedLibraryImages.Gear2Play[0],image);
+ assert.equal(galleryRenders,1);assert.equal(uploadEvent.target.value,'');
+ console.log('PASS: library upload retains selected brand, refreshes images, and resets file input');
  console.log('PASS: selection visibility, required input, duplicate prevention, preview, accept, regeneration from original, restore, errors, stale response');
 })().catch(error=>{console.error(error);process.exitCode=1;});

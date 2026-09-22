@@ -1079,7 +1079,14 @@
 #studioStatus{position:sticky;top:8px;z-index:20;background:#eef3ee;color:#34377a;padding:12px;border-radius:8px;margin:12px 0;}
 #studioStatus:empty{display:none;}
 #savedLibrary{margin-top:32px;border-top:1px solid #ddd;padding-top:24px;}
-#savedAds{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;}
+#savedAds{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:18px;}
+#savedLibrary h2{margin:0;}
+#savedLibraryToggle{display:inline-flex;align-items:center;gap:12px;max-width:100%;text-align:left;}
+#savedLibraryChevron{flex:none;}
+#savedAdsPanel{margin-top:16px;}
+#savedAdsPanel>p{margin-bottom:16px;}
+#savedLibrary .library-actions,#duplicateDialog .library-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px;}
+#savedLibrary .library-actions>.card-dl-btn,#duplicateDialog .library-actions>.card-dl-btn{max-width:100%;white-space:normal;overflow-wrap:anywhere;}
 .saved-ad{min-width:0;background:white;border:1px solid #ddd;border-radius:12px;padding:14px;}
 .saved-ad h3{font-size:14px;margin-bottom:12px;}.saved-ad p{white-space:pre-wrap;overflow-wrap:anywhere;}
 .saved-preview{position:relative;overflow:hidden;background:#34377a;display:flex;align-items:flex-end;padding:7%;}
@@ -1098,6 +1105,9 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .mock-social .canvas .headline-on-image{position:absolute;left:7%;right:7%;bottom:7%;overflow-wrap:anywhere;max-width:100%;}
 .mock-social .canvas.vertical-canvas .headline-on-image{right:18%;bottom:22%;}
 .mock-social .caption{font-size:15px;line-height:1.5;}
+.img-field .background-actions{display:flex;flex-direction:column;gap:12px;background:transparent;width:100%;margin-top:12px;}
+.img-field .background-actions>.upload-btn{width:100%;margin:0;padding:11px;box-sizing:border-box;}
+#backgroundPanel[hidden]+.background-actions #backgroundRestore{display:none;}
 .ai-image-badge{position:absolute;top:6px;left:6px;z-index:1;padding:2px 6px;background:#aa071b;color:#fff;font-size:11px;font-weight:700;border-radius:3px;}
 [hidden]{display:none!important;}
 </style>
@@ -1166,13 +1176,15 @@ button:disabled{opacity:.5;cursor:not-allowed;}
           <p id="backgroundStatus" role="status" aria-live="polite"></p>
           <p id="backgroundError" role="alert" style="color:var(--red,#aa071b);"></p>
           <img id="backgroundPreview" alt="Preview van de gegenereerde achtergrond" hidden style="max-width:100%;max-height:320px;object-fit:contain;">
+        </div>
+        <div class="background-actions">
           <button type="button" class="upload-btn" id="backgroundAccept" onclick="acceptBackground()" hidden>Afbeelding gebruiken</button>
           <button type="button" class="upload-btn" id="backgroundRestore" onclick="restoreBackground()">Terug naar origineel</button>
-        </div>
         <label class="upload-btn">
           <span class="icon">＋</span> <span id="libraryUploadLabel">Fotobibliotheek van geselecteerd merk updaten</span>
           <input type="file" id="libraryUploadInput" accept="image/*" multiple>
         </label>
+        </div>
       </div>
 
       <div class="field">
@@ -1258,12 +1270,13 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 
       <div id="studioStatus" role="status" aria-live="polite"></div>
       <div id="resultsArea"></div>
-      <section id="savedLibrary"><h2>Opgeslagen advertenties (<span id="savedCount">0</span>)</h2>
-      <p>Bewaard in deze browser. Open een advertentie om te bewerken, kopiëren of downloaden.</p><div id="savedAds"></div></section>
+      <section id="savedLibrary"><h2><button type="button" class="card-dl-btn" id="savedLibraryToggle" aria-expanded="false" aria-controls="savedAdsPanel" onclick="toggleSavedAds()"><span>Opgeslagen advertenties (<span id="savedCount">0</span>)</span><span id="savedLibraryChevron" aria-hidden="true">&#9662;</span></button></h2>
+      <div id="savedAdsPanel" hidden>
+      <p>Bewaard in deze browser. Open een advertentie om te bewerken, kopiëren of downloaden.</p><div id="savedAds"></div></div></section>
       <dialog id="duplicateDialog" aria-labelledby="duplicateTitle"><h2 id="duplicateTitle">Dupliceren naar formaten</h2>
       <p>Selecteer twee, drie of vier kanalen. Tekst en beeld worden hergebruikt.</p><div id="duplicateChoices"></div>
       <p id="duplicateStatus" role="status" aria-live="polite"></p>
-      <div class="card-dl-row"><button class="card-dl-btn" onclick="document.getElementById('duplicateDialog').close()">Annuleren</button>
+      <div class="card-dl-row library-actions"><button class="card-dl-btn" onclick="document.getElementById('duplicateDialog').close()">Annuleren</button>
       <button class="card-dl-btn" id="confirmDuplicate" onclick="confirmDuplicate()" disabled>Maak batch</button></div></dialog>
     </div>
 
@@ -2085,9 +2098,9 @@ Als hashtags niet van toepassing zijn voor dit platform, geef een lege array ter
   }
 }
 
-function renderResults(variants, platform, product, isOffline){
+function renderResults(variants, platform, product, isOffline, target=null){
   canvasResizeObserver.disconnect();
-  const resultsArea = document.getElementById('resultsArea');
+  const resultsArea = target || document.getElementById('resultsArea');
   const limits = PLATFORM_LIMITS[platform];
   const brand = document.getElementById('brand').value;
   const brandHandle = brand.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');

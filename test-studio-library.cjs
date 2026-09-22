@@ -39,17 +39,22 @@ vm.runInContext('onImageAdjust()',positionContext);
 assert.equal(positionContext.variantVisuals[0].imgScale,1,'Reset must retain 100% zoom');
 console.log('PASS: mobile-size horizontal/vertical panning, automatic pan room, crop preservation, reset');
 for(const match of fs.readFileSync('spectron-social-studio.html','utf8').matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)) new vm.Script(match[1]);
-function el(){return {textContent:'',style:{},classList:{add(){}},children:[],append(...nodes){this.children.push(...nodes)},replaceChildren(){this.children=[]},scrollIntoView(){},close(){},showModal(){},getAttribute(){return 'product.png'}};}
-const rows=new Map();let selected=[];let clipboard='';
-const db={transaction(store,mode){const tx={};tx.objectStore=()=>({put(ad){rows.set(ad.id,structuredClone(ad));},getAll(){const r={};queueMicrotask(()=>{r.result=store==='ads'?[...rows.values()]:[];r.onsuccess();});return r;}});if(mode==='readwrite')setTimeout(()=>tx.oncomplete(),0);return tx;}};
+function el(){return {attributes:{},setAttribute(name,value){this.attributes[name]=value;},textContent:'',style:{},classList:{add(){}},children:[],append(...nodes){this.children.push(...nodes)},replaceChildren(){this.children=[]},scrollIntoView(){},close(){},showModal(){},getAttribute(){return 'product.png'}};}
+const rows=new Map();let selected=[];let clipboard='';let transactions=0,opened=null;
+const db={transaction(store,mode){transactions++;const tx={};tx.objectStore=()=>({put(ad){rows.set(ad.id,structuredClone(ad));},getAll(){const r={};queueMicrotask(()=>{r.result=store==='ads'?[...rows.values()]:[];r.onsuccess();});return r;}});if(mode==='readwrite')setTimeout(()=>tx.oncomplete(),0);return tx;}};
 const context=vm.createContext({console,structuredClone,crypto:require('node:crypto').webcrypto,setTimeout,
  indexedDB:{open(){const r={};queueMicrotask(()=>{r.result=db;r.onsuccess()});return r;}},
  document:{getElementById(id){if(!elements.has(id))elements.set(id,el());return elements.get(id);},querySelector(){return el()},querySelectorAll(){return selected;},createElement:el},
  navigator:{clipboard:{async writeText(t){clipboard=t}}},
  brandImageRecords:[],renderImageGallery(){},
  currentVariants:[{headline:'Edited headline',body:'Same exact body',cta:'Shop now',hashtags:['toy']}],currentBrand:'Bluey',currentProduct:'Toy',currentPlatform:'Instagram / Facebook post',currentFormat:'1080x1080',selectedImage:'product.png',variantVisuals:[{imgScale:1.4,imgPosX:35,imgPosY:60,textScale:1.2}],SPECTRON_LOGO_SRC:'logo.png',
- updateFormatOptions(){},renderResults(){},selectVariant(){},applyImageTransform(){},applyTextScale(){}
+ updateFormatOptions(){},renderResults(variants){opened=variants[0];},selectVariant(){},applyImageTransform(){},applyTextScale(){}
 });
+assert.match(pageSource,/<button[^>]*id="savedLibraryToggle"[^>]*aria-expanded="false"[^>]*aria-controls="savedAdsPanel"/);
+assert.match(pageSource,/<div id="savedAdsPanel" hidden>/);
+assert.match(pageSource,/#savedLibrary \.library-actions,#duplicateDialog \.library-actions\{[^}]*flex-wrap:wrap;[^}]*gap:12px/);
+const panel=el();panel.hidden=true;elements.set('savedAdsPanel',panel);
+const toggle=el();toggle.setAttribute('aria-expanded','false');elements.set('savedLibraryToggle',toggle);
 vm.runInContext(fs.readFileSync('studio-library.js','utf8'),context);
 (async()=>{
  await vm.runInContext('adDatabase',context);
@@ -80,6 +85,27 @@ vm.runInContext(fs.readFileSync('studio-library.js','utf8'),context);
   assert.equal(preview.children[0].src,'product.png');
   assert.ok(preview.children.every(node=>! /logo|ai-image-badge/.test(node.className || '')));
  }
+ assert.equal(panel.hidden,true,'Saves and refresh leave the library collapsed');
+ assert.equal(Number(elements.get('savedCount').textContent),rows.size);
+ const cards=elements.get('savedAds').children;
+ const originalRows=JSON.stringify([...rows]);
+ const previousTransactions=transactions;
+ for(const expanded of [true,false,true]){
+  vm.runInContext('toggleSavedAds()',context);
+  assert.equal(panel.hidden,!expanded);
+  assert.equal(toggle.attributes['aria-expanded'],String(expanded));
+  assert.equal(elements.get('savedLibraryChevron').textContent,expanded?'\u25b4':'\u25be');
+  assert.equal(elements.get('savedAds').children,cards,'Toggling retains card nodes and handlers');
+ }
+ assert.equal(transactions,previousTransactions,'Toggling never reloads storage');
+ assert.equal(JSON.stringify([...rows]),originalRows,'Toggling never writes or duplicates ads');
+ const actionRow=cards[0].children[4];assert.equal(actionRow.className,'library-actions');
+ actionRow.children[0].onclick();assert.ok(rows.has(opened._savedId),'Open action works after reopening');
+ await vm.runInContext('refreshSavedAds()',context);assert.equal(panel.hidden,false,'Refresh preserves expanded state');
+ const removed=[...rows][0];rows.delete(removed[0]);
+ await vm.runInContext('refreshSavedAds()',context);assert.equal(Number(elements.get('savedCount').textContent),rows.size,'Count reflects removed storage records');
+ rows.set(...removed);await vm.runInContext('refreshSavedAds()',context);
+ console.log('PASS: collapsed initial state, accessible toggle/chevrons, stable nodes/storage, live count, reopened actions, wrapping button rows');
  await vm.runInContext('copyAdText(0)',context);assert.equal(clipboard,'Updated saved headline\n\nSame exact body\n\nShop now\n\n#toy');
  console.log('PASS: batches of 2/3/4, unique IDs, format dimensions, content/image/style preservation, save updates, library reload, clipboard text');
  selected=[{value:'0'},{value:'3'}];
