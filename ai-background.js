@@ -1,4 +1,4 @@
-﻿/* Image editing uses the same server-side Gemini key as ad generation. */
+/* Image editing uses the same server-side Gemini key as ad generation. */
 let backgroundOriginal = null;
 let backgroundAccepted = null;
 let backgroundPreview = null;

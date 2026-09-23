@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
@@ -293,6 +293,7 @@
     font-size:15px;
     line-height:1;
   }
+  .upload-btn .icon svg{width:16px;height:16px;display:block;}
   .img-hint{
     font-size:11px;
     color:var(--steel);
@@ -521,6 +522,10 @@
     0%{transform:translateX(-100%);}
     100%{transform:translateX(350%);}
   }
+  .video-result{display:grid;gap:16px;padding:16px;background:#fff;}
+  .video-result .card-dl-btn{justify-self:start;}
+  .video-preview{display:block;width:100%;max-height:70vh;object-fit:contain;background:#fff;}
+  #videoOptions label{display:block;margin-top:12px;}
   .loading p{
     font-family:'IBM Plex Mono',monospace;
     font-size:12px;
@@ -1110,6 +1115,21 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 #backgroundPanel[hidden]+.background-actions #backgroundRestore{display:none;}
 .ai-image-badge{position:absolute;top:6px;left:6px;z-index:1;padding:2px 6px;background:#aa071b;color:#fff;font-size:11px;font-weight:700;border-radius:3px;}
 [hidden]{display:none!important;}
+.ai-video-source{display:block;width:100%;max-height:220px;object-fit:contain;background:#fff;border:1px solid var(--steel-line);margin:10px 0;} .ai-video-controls textarea{width:100%;resize:vertical;} .ai-video-result .button-row{display:flex;gap:10px;flex-wrap:wrap;}
+
+  /* Keep Output type in the continuous pink Spec Sheet panel. */
+  .panel .ai-video-controls{background:#f487b8!important;}
+  .panel .ai-video-controls .hint{color:#34377a;}
+
+  .ai-video-modal{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(20,23,26,.62);}
+  .ai-video-modal[hidden]{display:none;}
+  .ai-video-modal-card{width:min(100%,460px);background:#fff;color:#34377a;padding:28px;box-shadow:0 18px 50px rgba(20,23,26,.28);border:1px solid #ded7df;border-radius:10px;}
+  .ai-video-modal-card h2{margin:0 0 12px;font-size:24px;line-height:1.15;}
+  .ai-video-modal-card p{margin:0 0 10px;line-height:1.5;}
+  .ai-video-modal-secondary{font-size:13px;color:#686982;}
+  .ai-video-modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;flex-wrap:wrap;}
+  .ai-video-modal-actions .generate-btn,.ai-video-modal-actions .card-dl-btn{width:auto;min-width:130px;}
+  @media(max-width:520px){.ai-video-modal-card{padding:22px;}.ai-video-modal-actions{flex-direction:column-reverse;}.ai-video-modal-actions button{width:100%!important;}}
 </style>
 </head>
 <body>
@@ -1158,12 +1178,12 @@ button:disabled{opacity:.5;cursor:not-allowed;}
       <div class="img-field">
         <label class="title" style="font-size:15px;">Merkbeelden</label>
         <div class="gallery-wrap">
-          <button type="button" class="gallery-arrow prev" hidden onclick="scrollGallery(-1)" aria-label="Vorige beelden">‹</button>
+          <button type="button" class="gallery-arrow prev" hidden onclick="scrollGallery(-1)" aria-label="Vorige beelden">&lsaquo;</button>
           <div class="img-gallery" id="imgGallery"></div>
-          <button type="button" class="gallery-arrow next" hidden onclick="scrollGallery(1)" aria-label="Volgende beelden">›</button>
+          <button type="button" class="gallery-arrow next" hidden onclick="scrollGallery(1)" aria-label="Volgende beelden">&rsaquo;</button>
         </div>
         <label class="upload-btn">
-          <span class="icon">⤒</span> Eigen foto uploaden
+          <span class="icon" aria-hidden="true">&#8679;</span> Upload your own photo
           <input type="file" id="uploadInput" accept="image/*">
         </label>
         <p class="img-hint">Upload een merk- of productbeeld voor de advertentie.</p>
@@ -1181,7 +1201,7 @@ button:disabled{opacity:.5;cursor:not-allowed;}
           <button type="button" class="upload-btn" id="backgroundAccept" onclick="acceptBackground()" hidden>Afbeelding gebruiken</button>
           <button type="button" class="upload-btn" id="backgroundRestore" onclick="restoreBackground()">Terug naar origineel</button>
         <label class="upload-btn">
-          <span class="icon">＋</span> <span id="libraryUploadLabel">Fotobibliotheek van geselecteerd merk updaten</span>
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M3 6.5h7l2 2h9v9.5A2 2 0 0 1 19 20H5a2 2 0 0 1-2-2V6.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span> <span id="libraryUploadLabel">Fotobibliotheek van geselecteerd merk updaten</span>
           <input type="file" id="libraryUploadInput" accept="image/*" multiple>
         </label>
         </div>
@@ -1223,11 +1243,29 @@ button:disabled{opacity:.5;cursor:not-allowed;}
         <input type="text" id="promo" placeholder="bijv. Nieuwe collectie live, -20% deze week">
       </div>
 
+            <div class="field ai-video-controls">
+        <label class="title" for="outputType">Output type</label>
+        <select id="outputType" onchange="updateVideoMode()" aria-describedby="aiVideoHelp">
+          <option value="image" selected>Image</option><option value="ai-video">AI Video</option>
+        </select>
+        <div id="videoOptions" hidden aria-hidden="true"><select id="videoDuration"><option value="3">3 seconds</option><option value="4" selected>4 seconds</option><option value="5">5 seconds</option></select><select id="videoMotion"><option value="zoom-in" selected>Slow Zoom In</option><option value="zoom-out">Slow Zoom Out</option><option value="pan-right">Pan Left to Right</option><option value="pan-left">Pan Right to Left</option></select></div>
+        <div id="aiVideoOptions" hidden>
+          <p id="aiVideoHelp" class="hint">Gebruik de geselecteerde Brand Image voor een echt vier seconden AI Video met Google Veo.</p>
+          <p id="aiVideoNoImage" class="hint" role="status">Select a Brand Image first.</p>
+          <img id="aiVideoSourcePreview" class="ai-video-source" alt="Selected Brand Image preview" hidden>
+          <label for="aiVideoPrompt">AI Video prompt</label>
+          <textarea id="aiVideoPrompt" rows="5" maxlength="4000"></textarea>
+          <label for="aiVideoAspect">Aspect ratio</label>
+          <select id="aiVideoAspect"><option value="9:16" selected>Portrait 9:16</option><option value="16:9">Landscape 16:9</option></select>
+          <p id="aiVideoSquareHint" class="hint" hidden>Veo maakt geen vierkante video. Kies 16:9 of 9:16.</p>
+          <button type="button" class="upload-btn" id="generateAIVideoBtn" onclick="generateAIVideo()" disabled>Generate AI Video</button>
+        </div>
+      </div>
       <input type="hidden" id="variantCount" value="4">
 
       <div class="field" style="border-bottom:none; padding-top:6px;">
         <button class="generate-btn" id="generateBtn" onclick="generateAds()">
-          Genereer advertentie <span class="arrow">→</span>
+          Genereer advertentie <span class="arrow" aria-hidden="true">&rarr;</span>
         </button>
       </div>
     </div>
@@ -1238,7 +1276,7 @@ button:disabled{opacity:.5;cursor:not-allowed;}
         <h2>Gegenereerde content</h2>
         <div style="display:flex;align-items:center;gap:12px;">
           <span id="outputMeta">nog niets gegenereerd</span>
-          <button id="downloadAllBtn" class="dl-all-btn" onclick="downloadAllVariants()" style="display:none;">↓ Download alles (.txt)</button>
+          <button id="downloadAllBtn" class="dl-all-btn" onclick="downloadAllVariants()" style="display:none;">&#8595; Download alles (.txt)</button>
         </div>
       </div>
       <p style="font-size:12px;color:var(--steel);margin:-8px 0 16px;">Klik in een kop, body of CTA hieronder om direct te bewerken — downloads gebruiken automatisch je aanpassingen.</p>
@@ -1283,7 +1321,7 @@ button:disabled{opacity:.5;cursor:not-allowed;}
   </div>
 
   <div class="footer-note">
-    <span>SPECTRON TOYS © 2026 — SOCIAL STUDIO</span>
+    <span>SPECTRON TOYS &copy; 2026 — SOCIAL STUDIO</span>
     <span>Tekst wordt per keer gegenereerd, controleer altijd op merk- en feitelijke juistheid vóór publicatie.</span>
   </div>
 
@@ -1992,11 +2030,11 @@ function setAdGenerationState(generating){
   btn.disabled = generating;
   btn.setAttribute('aria-busy', String(generating));
   resultsArea.setAttribute('aria-busy', String(generating));
-  btn.innerHTML = generating ? 'Generating…' : 'Genereer advertentie <span class="arrow">→</span>';
+  btn.innerHTML = generating ? 'Generating...' : 'Genereer advertentie <span class="arrow" aria-hidden="true">&rarr;</span>';
   if(generating){
     document.getElementById('downloadAllBtn').style.display = 'none';
     document.getElementById('imgAdjust').style.display = 'none';
-    document.getElementById('outputMeta').textContent = 'Generating…';
+    document.getElementById('outputMeta').textContent = 'Generating...';
     resultsArea.innerHTML = `<div class="loading" id="adGenerationLoading">
       <p id="adGenerationStatus" role="status" aria-live="polite">Generating your advertisements…</p>
       <div class="bar" role="progressbar" aria-labelledby="adGenerationStatus"></div>
@@ -2024,6 +2062,8 @@ async function generateAds(){
     return;
   }
 
+  if(document.getElementById('outputType')?.value === 'ai-video') return generateAIVideo();
+  if(typeof cleanupAnimatedVideo === 'function') cleanupAnimatedVideo();
   setAdGenerationState(true);
 
   try{
@@ -2202,7 +2242,7 @@ function renderResults(variants, platform, product, isOffline, target=null){
           </div>
           <div class="card-dl-row">
             <details class="download-menu">
-              <summary class="card-dl-btn">Download <span aria-hidden="true">▾</span></summary>
+              <summary class="card-dl-btn">Download <span aria-hidden="true">&#9662;</span></summary>
               <div class="download-options">
                 <button type="button" class="card-dl-btn" onclick="this.closest('details').open=false; downloadVariant(${idx})">Tekst (.txt)</button>
                 <button type="button" class="card-dl-btn" id="imgBtn-${idx}" onclick="this.closest('details').open=false; downloadCardImage(${idx})">Afbeelding (.png)</button>
@@ -2309,7 +2349,30 @@ updateStepIndicator();
 updateFormatOptions();
 renderImageGallery();
 </script>
+<script src="animated-video.js"></script>
+<script src="ai-video.js"></script>
 <script src="ai-background.js"></script>
 <script src="studio-library.js"></script>
+
+<div id="aiVideoConfirmModal" class="ai-video-modal" hidden role="dialog" aria-modal="true" aria-labelledby="aiVideoConfirmTitle">
+  <div class="ai-video-modal-card" role="document">
+    <h2 id="aiVideoConfirmTitle">Generate AI Video?</h2>
+    <p>You&apos;re about to create a 4-second AI video using Google Veo. This is a paid generation.</p>
+    <p class="ai-video-modal-secondary">Your selected brand image and video prompt will be used to create the video.</p>
+    <div class="ai-video-modal-actions">
+      <button type="button" id="aiVideoConfirmButton" class="generate-btn">Generate video</button>
+      <button type="button" id="aiVideoCancelButton" class="card-dl-btn">Cancel</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+

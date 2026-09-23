@@ -1,4 +1,4 @@
-﻿const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const page=fs.readFileSync('spectron-social-studio.html','utf8');
 const source=page.slice(page.indexOf('async function downloadCardImage('),page.indexOf('async function downloadTikTokVideo('));
 const node={querySelectorAll:()=>[]};

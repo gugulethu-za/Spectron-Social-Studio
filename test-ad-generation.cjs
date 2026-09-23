@@ -22,7 +22,7 @@ function restored(s){assert.equal(s.el('generateBtn').disabled,false);assert.mat
  assert.match(s.el('resultsArea').innerHTML,/role="progressbar"/);
  assert.match(s.el('resultsArea').innerHTML,/aria-live="polite"/);
  assert.doesNotMatch(s.el('resultsArea').innerHTML,/OLD RESULTS|aria-valuenow/);
- assert.equal(s.el('generateBtn').disabled,true);assert.equal(s.el('generateBtn').innerHTML,'Generating…');
+ assert.equal(s.el('generateBtn').disabled,true);assert.equal(s.el('generateBtn').innerHTML,'Generating...');
  await s.run();assert.equal(s.requests(),1);
  s.respond(success);await pending;restored(s);assert.equal(s.renders(),1);assert.equal(s.el('resultsArea').innerHTML,'NEW RESULTS');
  // A later click starts a new generation after the lock is released.
@@ -35,5 +35,9 @@ function restored(s){assert.equal(s.el('generateBtn').disabled,false);assert.mat
   else {assert.match(s.el('resultsArea').innerHTML,/Opnieuw proberen/);assert.match(s.el('resultsArea').innerHTML,/onclick="generateAds\(\)"/);}
  }
  s=session();s.el('brand').value='';await s.run();assert.equal(s.requests(),0);assert.doesNotMatch(s.el('resultsArea').innerHTML,/progressbar/);
+ s=session();s.el('outputType').value='video';let videoCalls=0;s.context.generateAnimatedAd=async()=>{videoCalls++;};await s.run();assert.equal(videoCalls,1);assert.equal(s.requests(),0,'Video mode must bypass the AI text endpoint');
  console.log('PASS: immediate accessible indeterminate progress, old-result replacement, disabled button, duplicate prevention, rendering completion, retry, fallback and failure cleanup');
 })().catch(error=>{console.error(error);process.exitCode=1;});
+
+
+

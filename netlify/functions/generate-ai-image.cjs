@@ -1,4 +1,4 @@
-﻿const MAX_BYTES = 3 * 1024 * 1024;
+const MAX_BYTES = 3 * 1024 * 1024;
 const reply = (statusCode, body) => ({statusCode, headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
 exports.handler = async function(event) {
   if(event.httpMethod !== 'POST') return {...reply(405, {error:'Method not allowed'}), headers:{Allow:'POST'}};

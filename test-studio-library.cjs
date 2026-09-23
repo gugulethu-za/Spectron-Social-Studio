@@ -1,4 +1,4 @@
-﻿const fs=require('node:fs'), vm=require('node:vm'), assert=require('node:assert/strict');
+const fs=require('node:fs'), vm=require('node:vm'), assert=require('node:assert/strict');
 const elements=new Map();
 // Exercise the actual text-fitting function at two proportional 9:16 preview sizes.
 const pageSource=fs.readFileSync('spectron-social-studio.html','utf8');

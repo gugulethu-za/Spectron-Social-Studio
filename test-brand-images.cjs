@@ -1,4 +1,4 @@
-﻿const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const page=fs.readFileSync('spectron-social-studio.html','utf8');
 const stores=new Map([['ads',new Map([['existing',{id:'existing',savedAt:'2026-01-01',format:'1080x1080',variant:{headline:'Keep',body:'',cta:''},visual:{imgScale:1,imgPosX:50,imgPosY:50,textScale:1}}]])]]);
 let version=1, failWrites=false, queue=Promise.resolve();

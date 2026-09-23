@@ -1,4 +1,4 @@
-﻿const assert = require('node:assert/strict');
+const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const {handler} = require('./netlify/functions/generate-ai-image.cjs');
