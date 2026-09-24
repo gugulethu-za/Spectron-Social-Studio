@@ -328,7 +328,8 @@
     margin:0;
     touch-action:pan-y;
   }
-  .adjustment-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;}
+  .adjustment-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+  .scrim,.saved-shade{opacity:calc(var(--gradient-darkness, .25) * 1.1363636363636364);}
   .adjustment-grid .adj-row{min-width:0;}
   @media(max-width:860px){.adjustment-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
   @media(max-width:480px){.adjustment-grid{grid-template-columns:minmax(0,1fr);gap:8px;}}
@@ -1299,6 +1300,10 @@ button:disabled{opacity:.5;cursor:not-allowed;}
         </div>
         <div class="adjustment-grid">
           <div class="adj-row">
+            <label for="gradientDarkness">Gradient darkness <span id="gradientDarknessValue">25%</span></label>
+            <input type="range" id="gradientDarkness" min="0" max="60" step="5" value="25" aria-label="Gradient darkness" aria-valuemin="0" aria-valuemax="60" aria-valuenow="25" oninput="applyGradientDarkness()">
+          </div>
+          <div class="adj-row">
             <label for="zoomSlider">Beeld — zoom <span id="zoomVal">100%</span></label>
             <input type="range" id="zoomSlider" min="100" max="220" value="100" oninput="onImageAdjust()">
           </div>
@@ -1672,9 +1677,9 @@ async function downloadTikTokVideo(idx){
 
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
         gradient.addColorStop(.25, "rgba(0,0,0,0)");
-        gradient.addColorStop(.5, "rgba(0,0,0,.24)");
-        gradient.addColorStop(.8, "rgba(0,0,0,.72)");
-        gradient.addColorStop(1, "rgba(0,0,0,.88)");
+        gradient.addColorStop(.5, `rgba(0,0,0,${.24 / .88 * gradientDarkness / 100})`);
+        gradient.addColorStop(.8, `rgba(0,0,0,${.72 / .88 * gradientDarkness / 100})`);
+        gradient.addColorStop(1, `rgba(0,0,0,${.88 / .88 * gradientDarkness / 100})`);
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -1722,6 +1727,25 @@ let selectedImage = null;
 let imgScale = 1;
 let imgPosX = 50;
 let imgPosY = 50;
+// The original strongest black stop is .88; scale the entire gradient layer
+// proportionally, leaving its geometry, image, and text untouched.
+const DEFAULT_GRADIENT_DARKNESS = 25;
+let gradientDarkness = DEFAULT_GRADIENT_DARKNESS;
+function normalizeGradientDarkness(value){
+  if(value == null || value === '') return DEFAULT_GRADIENT_DARKNESS;
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.max(0, Math.min(60, number)) : DEFAULT_GRADIENT_DARKNESS;
+}
+function applyGradientDarkness(value = document.getElementById('gradientDarkness').value){
+  gradientDarkness = normalizeGradientDarkness(value);
+  const slider = document.getElementById('gradientDarkness');
+  slider.value = gradientDarkness;
+  slider.setAttribute('aria-valuenow', String(gradientDarkness));
+  document.getElementById('gradientDarknessValue').textContent = gradientDarkness + '%';
+  document.querySelectorAll('.mock-social .canvas').forEach(canvas => {
+    canvas.style.setProperty('--gradient-darkness', String(gradientDarkness / 100));
+  });
+}
 const DEFAULT_TEXT_SCALE = 1.5;
 let textScale = DEFAULT_TEXT_SCALE;
 
@@ -1812,6 +1836,7 @@ function resetTextAdjust(){
 }
 
 function resetAllAdjust(){
+  applyGradientDarkness(DEFAULT_GRADIENT_DARKNESS);
   resetImageAdjust();
   resetTextAdjust();
 }
@@ -2283,6 +2308,7 @@ function renderResults(variants, platform, product, isOffline, target=null){
   selectVariant(0);
   applyImageTransform();
   variantVisuals.forEach((_, idx) => { applyImageTransform(idx); applyTextScale(idx); });
+  applyGradientDarkness();
   document.querySelectorAll('.mock-social .canvas').forEach(canvas => canvasResizeObserver.observe(canvas));
   document.getElementById('downloadAllBtn').style.display = variants.length ? 'inline-block' : 'none';
 }

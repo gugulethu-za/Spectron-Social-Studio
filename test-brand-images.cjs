@@ -15,7 +15,7 @@ const db={objectStoreNames:{contains:name=>stores.has(name)},createObjectStore(n
 }};
 const indexedDB={open(name,next){assert.equal(name,'spectron-saved-ads');const request={};queueMicrotask(()=>{request.result=db;if(version<next){request.onupgradeneeded();version=next;}request.onsuccess();});return request;}};
 function session(){
- const elements=new Map();const el=id=>{if(!elements.has(id)) elements.set(id,{value:'',style:{},textContent:'',innerHTML:'',classList:{add(){}},append(){},replaceChildren(){},scrollIntoView(){},getAttribute(){return context.selectedImage;}});return elements.get(id);};
+ const elements=new Map();const el=id=>{if(!elements.has(id)) elements.set(id,{value:'',setAttribute(){},style:{setProperty(name,value){this[name]=value;}},textContent:'',innerHTML:'',classList:{add(){}},append(){},replaceChildren(){},scrollIntoView(){},getAttribute(){return context.selectedImage;}});return elements.get(id);};
  el('brand').value='Bluey';
  const context=vm.createContext({console,structuredClone,indexedDB,crypto:require('node:crypto').webcrypto,
   document:{getElementById:el,createElement:()=>el(Symbol()),querySelector:()=>el('image'),querySelectorAll:selector=>selector === '.gallery-arrow' ? [el('prevArrow'),el('nextArrow')] : []},
@@ -26,6 +26,7 @@ function session(){
   PLATFORM_LIMITS:{'Instagram / Facebook post':{mock:'social'},'Instagram / Facebook story':{mock:'social'},TikTok:{mock:'social'},'Google Ads (zoekadvertentie)':{mock:'google'},LinkedIn:{mock:'linkedin'}}
  });
  const run=code=>vm.runInContext(code,context);
+ run(page.slice(page.indexOf('const DEFAULT_GRADIENT_DARKNESS'),page.indexOf('const DEFAULT_TEXT_SCALE')));
  run(page.slice(page.indexOf('function renderImageGallery()'),page.indexOf("document.getElementById('uploadInput').addEventListener")));
  run(page.slice(page.indexOf('function renderResults('),page.indexOf('function onEdit(')));
  run(fs.readFileSync('studio-library.js','utf8'));

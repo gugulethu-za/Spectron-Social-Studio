@@ -39,7 +39,7 @@ function snapshotAd(idx){
     product:currentProduct, platform:currentPlatform, format:currentFormat,
     label:existing?.platform === currentPlatform && existing?.format === currentFormat ? existing.label : undefined,
     image:image ? image.getAttribute('src') : selectedImage,
-    visual:structuredClone(variantVisuals[idx]), savedAt:new Date().toISOString()};
+    gradientDarkness, visual:structuredClone(variantVisuals[idx]), savedAt:new Date().toISOString()};
 }
 async function saveAd(idx){
   try{
@@ -110,6 +110,7 @@ async function refreshSavedAds(){
     title.textContent = `${ad.label || ad.platform} · ${ad.format.replace('x',' × ')}`;
     const preview = document.createElement('div');
     preview.className = 'saved-preview';
+    preview.style.setProperty('--gradient-darkness', String(normalizeGradientDarkness(ad.gradientDarkness) / 100));
     const [w,h] = ad.format.split('x').map(Number);
     preview.style.aspectRatio = w && h ? `${w}/${h}` : '1';
     if(ad.image){
@@ -141,6 +142,7 @@ function openSavedAd(id){
   currentBrand = ad.brand;
   renderImageGallery();
   selectedImage = ad.image;
+  applyGradientDarkness(normalizeGradientDarkness(ad.gradientDarkness));
   if(typeof syncBackgroundImage === 'function') syncBackgroundImage();
   renderResults([{...structuredClone(ad.variant),_savedId:ad.id}], ad.platform, ad.product, false);
   variantVisuals[0] = structuredClone(ad.visual);
