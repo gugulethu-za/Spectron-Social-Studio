@@ -14,7 +14,8 @@ exports.handler = async function handler(event) {
     const response = await fetch(`${API_BASE}/${operation}`,{headers:{'x-goog-api-key':apiKey},signal:AbortSignal.timeout(20000)});
     let result = null; try { result = await response.json(); } catch {}
     if (!response.ok) return reply(response.status === 401 || response.status === 403 ? response.status : 502,{error:response.status === 403 ? 'The configured Gemini API key is not permitted to read this operation.' : response.status === 401 ? 'The configured Gemini API key is invalid.' : 'Google operation status could not be read.'});
-    if (!result || result.done !== true) return reply(200,{state:'pending',operation});
+    if (!result || typeof result !== 'object' || Array.isArray(result) || (result.done !== undefined && typeof result.done !== 'boolean')) return reply(502,{error:'Google returned an invalid operation status.'});
+    if (result.done !== true) return reply(200,{state:'pending',operation});
     if (result.error || !extractVideoUri(result)) return reply(200,{state:'failed',operation,message:safeFailure(result.error)});
     return reply(200,{state:'completed',operation,videoReference:operation});
   } catch (error) { return reply(502,{error:error?.name === 'TimeoutError' ? 'The Google operation status request timed out.' : 'The Google operation status request failed.'}); }

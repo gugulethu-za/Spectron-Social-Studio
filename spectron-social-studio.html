@@ -2468,11 +2468,6 @@ function renderResults(variants, platform, product, isOffline, target=null){
   }
 
   let html = "";
-  if(isOffline){
-    html += `<div class="error-box" style="border-color:var(--forest);background:#EEF3EE;color:var(--forest);margin-bottom:16px;">
-      <b>Lokale modus:</b> de live AI-verbinding is niet beschikbaar in deze losse versie van de tool. Daarom zijn deze teksten gemaakt met de ingebouwde tekstgenerator. Je kunt ze hieronder direct aanpassen.
-    </div>`;
-  }
   html += `<div class="cards">`;
 
   variants.forEach((v, idx)=>{
@@ -2677,6 +2672,7 @@ showWorkflowChooser();
     <h2 id="aiVideoConfirmTitle">Generate AI Video?</h2>
     <p>You&apos;re about to create a 4-second AI video using Google Veo. This is a paid generation.</p>
     <p class="ai-video-modal-secondary">Your selected brand image and video prompt will be used to create the video.</p>
+    <p id="aiVideoRetryWarning" class="ai-video-modal-secondary" hidden>The previous video request may already have started. Starting again may create another paid video.</p>
     <div class="ai-video-modal-actions">
       <button type="button" id="aiVideoConfirmButton" class="generate-btn">Generate video</button>
       <button type="button" id="aiVideoCancelButton" class="card-dl-btn">Cancel</button>

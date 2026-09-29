@@ -14,12 +14,14 @@ exports.handler = async function handler(event) {
     const statusResponse = await fetch(`${API_BASE}/${operation}`,{headers:{'x-goog-api-key':apiKey},signal:AbortSignal.timeout(20000)});
     let status = null; try { status = await statusResponse.json(); } catch {}
     if (!statusResponse.ok) return reply(statusResponse.status === 401 || statusResponse.status === 403 ? statusResponse.status : 502,{error:'Google operation status could not be read.'});
-    if (status?.done !== true) return reply(409,{error:'The Veo video is not ready yet.'});
+    if (!status || typeof status !== 'object' || Array.isArray(status) || (status.done !== undefined && typeof status.done !== 'boolean')) return reply(502,{error:'Google returned an invalid operation status.'});
+    if (status.done !== true) return reply(409,{error:'The Veo video is not ready yet.'});
     if (status.error) return reply(422,{error:/safety|blocked|unsafe|policy/i.test(JSON.stringify(status.error)) ? 'Google safety checks blocked this video request.' : 'Google reported that the video request failed.'});
     const videoUri = extractVideoUri(status);
     if (!validVideoUri(videoUri)) return reply(502,{error:'Google returned an unavailable or unsafe video reference.'});
     const videoResponse = await fetch(videoUri,{headers:new URL(videoUri).hostname === 'generativelanguage.googleapis.com' ? {'x-goog-api-key':apiKey} : {},signal:AbortSignal.timeout(60000)});
     if (!videoResponse.ok) return reply(502,{error:'The generated video is unavailable or has expired.'});
+    if (!(videoResponse.headers?.get('Content-Type') || '').toLowerCase().startsWith('video/mp4')) return reply(502,{error:'Google returned an invalid video response.'});
     const bytes = Buffer.from(await videoResponse.arrayBuffer());
     if (!bytes.length) return reply(502,{error:'Google returned an empty video.'});
     return {statusCode:200,isBase64Encoded:true,headers:{'Content-Type':'video/mp4','Content-Disposition':'attachment; filename="veo-test.mp4"','Cache-Control':'no-store'},body:bytes.toString('base64')};

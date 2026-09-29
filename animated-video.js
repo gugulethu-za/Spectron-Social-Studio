@@ -75,6 +75,7 @@ function recordAnimatedCanvas(job, canvas, drawFrame, seconds, mimeType){
       };
       recorder.start(100);
       const started = performance.now();
+      
       function frame(now){
         try{
           checkVideoJob(job);
