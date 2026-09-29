@@ -1142,31 +1142,211 @@ button:disabled{opacity:.5;cursor:not-allowed;}
     .ai-video-result .ai-video-preview-error{margin:0;}
     .ai-video-result .button-row{padding-top:2px;}
   }
+
+  /* Workflow shell follows the committed Spectron palette and reference layout. */
+  .wrap{max-width:none;min-height:100vh;margin:0;padding:16px 24px 12px;display:flex;flex-direction:column;gap:14px;}
+  .masthead{flex:none;min-height:104px;margin:0;padding:8px 20px 14px;background:#e7e7e7;border:0;border-radius:0;box-shadow:none;}
+  .brandmark{display:flex;width:auto;min-width:0;gap:22px;align-items:center;}
+  .brandmark>div:last-child{grid-column:auto;justify-self:auto;align-self:center;display:block;transform:none;}
+  .brandmark .spectron-logo{display:block;width:180px;max-width:100%;height:auto;object-fit:contain;}
+  .brandmark .divider{display:block;width:1px;min-height:72px;align-self:stretch;background:#34377a;margin:0;}
+  .brandmark h1{font-size:72px;font-weight:500;line-height:1;letter-spacing:-1.5px;white-space:nowrap;color:#34377a;}
+  .studio-shell{flex:1;min-height:0;width:100%;grid-template-columns:minmax(280px,340px) minmax(0,1fr);gap:24px;align-items:stretch;}
+  .workflow-panel{position:sticky;top:12px;align-self:start;min-width:0;max-height:calc(100vh - 150px);overflow-y:auto;overscroll-behavior:contain;background:#f487b8;border:0!important;border-radius:0;box-shadow:none;}
+  .workflow-panel .panel-head{position:sticky;top:0;z-index:4;min-height:42px;align-items:center;gap:8px;padding:10px 14px;background:#34377a!important;border-radius:0;color:#fff;font-family:'Nunito Sans',sans-serif;font-size:14px;font-weight:800;letter-spacing:.25px;text-transform:none;}
+  .workflow-back{border:0;background:#35c5d2;color:#34377a;font:700 12px 'Nunito Sans',sans-serif;padding:7px 9px;cursor:pointer;}
+  .workflow-chooser{display:grid;gap:14px;padding:18px 14px;}
+  .workflow-choice{min-height:68px;width:100%;padding:12px 14px;border:2px solid transparent;background:#35c5d2;color:#34377a;font:800 16px/1.2 'Nunito Sans',sans-serif;cursor:pointer;}
+  .workflow-choice:hover,.workflow-choice[aria-pressed="true"]{border-color:#fff;background:#35c5d2;}
+  .workflow-choice:focus-visible,.workflow-back:focus-visible,.video-format-choice:focus-within{outline:3px solid #fff;outline-offset:2px;}
+  .workflow-panel .field,.workflow-panel .img-field{padding:8px 14px;border:0!important;background:transparent!important;}
+  .workflow-panel .field-num{margin-bottom:3px;color:#aa071b;font-size:11px;}
+  .workflow-panel .field label.title,.workflow-panel .img-field .title{margin-bottom:7px;color:#34377a;font-family:'Nunito Sans',sans-serif;font-size:15px;font-weight:800;}
+  .workflow-panel .hint,.workflow-panel .img-hint{margin:4px 0 0;color:#34377a;font-size:11px;line-height:1.35;}
+  .workflow-panel select,.workflow-panel input[type=text],.workflow-panel textarea{min-height:36px;padding:9px 10px;border:0!important;border-radius:0;background:#fff;color:#34377a;box-shadow:none!important;font:500 13px 'Nunito Sans',sans-serif;}
+  .workflow-panel select:focus-visible,.workflow-panel input[type=text]:focus-visible,.workflow-panel textarea:focus-visible{outline:3px solid #34377a;outline-offset:1px;}
+  .workflow-panel .img-gallery{min-height:54px;padding:2px 2px 8px;gap:8px;}
+  .workflow-panel .img-thumb{flex-basis:132px;aspect-ratio:4/3;}
+  .workflow-panel .gallery-arrow{background:#35c5d2;color:#34377a;}
+  .workflow-panel .upload-btn{display:flex;align-items:center;justify-content:center;gap:7px;min-height:36px;width:100%;margin:7px 0 0;padding:9px 10px;border:0!important;border-radius:0;background:#35c5d2;color:#34377a;font:800 12px/1.2 'Nunito Sans',sans-serif;text-align:center;cursor:pointer;}
+  .workflow-panel .upload-btn:hover{background:#27b8c7;}
+  .workflow-panel .upload-btn:focus-within{outline:3px solid #34377a;outline-offset:2px;}
+  .workflow-panel .background-actions{gap:8px;margin-top:8px;}
+  .workflow-panel .background-actions>.upload-btn{margin:0;}
+  .workflow-panel .library-upload{margin-top:8px;}
+  .workflow-panel .field.usp-field{padding-top:12px;padding-bottom:12px;}
+  .workflow-panel .chips{gap:5px;margin-top:4px;}
+  .workflow-panel .chip-opt{min-height:28px;padding:4px 7px;border:0!important;border-radius:0;background:#fff;color:#34377a;font-size:12px;}
+  .workflow-panel .chip-opt.on{background:#35c5d2!important;color:#34377a!important;outline:2px solid #34377a;outline-offset:-2px;}
+  .workflow-panel .chip-opt input{accent-color:#34377a;}
+  .workflow-panel .workflow-primary-action{padding:10px 14px 16px;border:0!important;background:transparent!important;}
+  .workflow-panel .generate-btn{display:block;width:100%;min-height:46px;padding:12px 14px;border:0;border-radius:0;background:#aa071b!important;color:#fff;font:800 15px 'Nunito Sans',sans-serif;}
+  .workflow-panel .generate-btn:not(:disabled):hover{background:#840313!important;}
+  .workflow-panel .generate-btn:focus-visible{outline:3px solid #34377a;outline-offset:3px;}
+  .workflow-panel .generate-btn:disabled{opacity:.62;}
+  .video-step .field-num{display:block;margin-bottom:10px;}
+  .video-format-fieldset{min-width:0;margin:14px 0;padding:0;border:0;}
+  .video-format-fieldset legend{margin-bottom:8px;color:#34377a;font-weight:800;}
+  .video-format-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .video-format-choice{position:relative;display:flex;min-width:0;min-height:86px;align-items:stretch;cursor:pointer;}
+  .video-format-choice input{position:absolute;width:1px;height:1px;opacity:0;}
+  .video-format-choice>span{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#35c5d2;color:#34377a;font-size:13px;}
+  .video-format-choice strong{font-size:15px;}
+  .video-format-choice.selected>span{outline:3px solid #34377a;outline-offset:-3px;}
+  .video-format-choice input:focus-visible+span{outline:3px solid #fff;outline-offset:2px;}
+  .workspace-canvas{position:relative;min-width:0;min-height:calc(100vh - 220px);background:#d1d1d1;overflow:hidden;}
+  .workspace-placeholder{position:absolute;inset:0;display:grid;place-items:center;color:#34377a;font-size:30px;font-weight:400;}
+  .output#workspaceOutput{position:relative;z-index:1;width:100%;min-width:0;min-height:100%;padding:20px;background:transparent;}
+  .output#workspaceOutput[hidden]{display:none!important;}
+  .output-head{flex-wrap:wrap;}
+  .output-head h2{color:#34377a;}
+  #resultsArea:empty{min-height:420px;background:transparent;}
+  .workspace-details{margin:0 0 16px;}
+  .workspace-details>summary{width:fit-content;max-width:100%;padding:10px 12px;background:#35c5d2;color:#34377a;font-weight:800;cursor:pointer;}
+  .workspace-details>summary:focus-visible{outline:3px solid #34377a;outline-offset:2px;}
+  .workflow-panel .ai-video-source{max-height:150px;margin:8px 0;}
+  .workflow-panel #aiVideoPrompt{display:block;width:100%;min-height:104px;resize:vertical;}
+  .selected-image-details{margin:10px 0;}
+  .selected-image-details>summary{width:fit-content;max-width:100%;padding:7px 9px;background:#fff;color:#34377a;font-size:12px;cursor:pointer;}
+  .selected-image-details>summary:focus-visible{outline:3px solid #34377a;outline-offset:2px;}
+  .workflow-panel #aiVideoOptions>label.title{display:block;margin:10px 0 7px;}
+  .workflow-panel #generateAIVideoBtn{margin-top:12px;}
+  .visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;}
+  .footer-note{flex:none;margin:0;padding:10px 2px 0;border-top:1px solid #c8ceca;color:#34377a;font:600 11px 'Nunito Sans',sans-serif;}
+  .footer-note span:last-child{max-width:70%;text-align:right;}
+  @media(max-width:1024px){.studio-shell{grid-template-columns:minmax(260px,300px) minmax(0,1fr);gap:16px;}.output#workspaceOutput{padding:14px;}}
+  @media(max-width:1120px) and (min-width:861px){.brandmark h1{font-size:clamp(56px,7vw,78px);letter-spacing:-2px;}}
+  @media(max-width:860px){.wrap{padding:12px 16px 10px;gap:12px;}.masthead{min-height:86px;padding:8px 12px 10px;}.brandmark{align-items:center;gap:12px;}.brandmark h1{font-size:clamp(34px,7vw,54px);font-weight:600;letter-spacing:-2px;}.studio-shell{grid-template-columns:minmax(0,1fr);gap:14px;}.workflow-panel{position:static;top:auto;max-height:none;overflow:visible;}.workspace-canvas{min-height:420px;}.footer-note span:last-child{max-width:none;text-align:left;}}
+  @media(max-width:480px){.wrap{padding:8px 10px 10px;gap:10px;}.masthead{min-height:66px;padding:8px;}.brandmark{gap:8px;align-items:center;}.brandmark .spectron-logo{width:clamp(70px,24vw,110px);}.brandmark .divider{min-height:42px;}.brandmark h1{font-size:clamp(27px,9vw,42px);font-weight:600;letter-spacing:-1.5px;}.workflow-panel .panel-head{padding:9px 11px;}.workflow-chooser{gap:10px;padding:12px;}.workflow-choice{min-height:58px;font-size:15px;}.workspace-canvas{min-height:360px;}.output#workspaceOutput{padding:10px;}.video-format-choices{gap:8px;}.footer-note{font-size:10px;}}
+  @media(max-width:340px){.brandmark{gap:6px;}.brandmark .spectron-logo{width:68px;}.brandmark h1{font-size:26px;letter-spacing:-1.4px;}}
+
+
+  /* Calm, consistent application chrome. Generated advertisement artwork is intentionally excluded. */
+  :root{
+    --studio-space-1:4px;--studio-space-2:8px;--studio-space-3:12px;
+    --studio-space-4:16px;--studio-space-5:24px;--studio-space-6:32px;
+    --studio-radius-sm:6px;--studio-radius-md:9px;
+    --studio-line:rgba(52,55,122,.18);--studio-soft-shadow:0 3px 14px rgba(52,55,122,.08);
+  }
+  .wrap{gap:var(--studio-space-3);padding:var(--studio-space-4) 24px var(--studio-space-3);}
+  .masthead{min-height:92px;padding:var(--studio-space-2) 20px;background:#e7e7e7;border-radius:var(--studio-radius-md);}
+  .brandmark{gap:var(--studio-space-5);}
+  .brandmark .spectron-logo{width:168px;}
+  .brandmark .divider{min-height:64px;}
+  .brandmark h1{font-size:60px;font-weight:500;line-height:1.08;letter-spacing:-1.2px;}
+  .studio-shell{gap:var(--studio-space-5);}
+  .workflow-panel{border:1px solid var(--studio-line)!important;border-radius:var(--studio-radius-md);box-shadow:var(--studio-soft-shadow);}
+  .workflow-panel .panel-head{min-height:44px;padding:var(--studio-space-2) var(--studio-space-4);border-radius:var(--studio-radius-md) var(--studio-radius-md) 0 0;font-size:14px;font-weight:600;letter-spacing:.01em;}
+  .workflow-back{border:1px solid rgba(52,55,122,.22);border-radius:var(--studio-radius-sm);padding:7px 10px;font-weight:600;}
+  .workflow-chooser{gap:var(--studio-space-3);padding:var(--studio-space-4);}
+  .workflow-choice{min-height:60px;padding:var(--studio-space-3);border:1px solid rgba(52,55,122,.2);border-radius:var(--studio-radius-md);font-size:15px;font-weight:600;line-height:1.35;box-shadow:0 1px 3px rgba(52,55,122,.06);}
+  .workflow-choice:hover,.workflow-choice[aria-pressed="true"]{border-color:#34377a;background:#35c5d2;box-shadow:0 2px 7px rgba(52,55,122,.12);}
+  .workflow-choice:active,.workflow-back:active,.workflow-panel .upload-btn:active{filter:brightness(.96);}
+  .workflow-choice:focus-visible,.workflow-back:focus-visible{outline:3px solid #34377a;outline-offset:2px;}
+  .workflow-panel .field,.workflow-panel .img-field{padding:var(--studio-space-2) var(--studio-space-4);border-bottom:1px solid rgba(52,55,122,.12)!important;}
+  .workflow-panel .field-num{margin-bottom:var(--studio-space-1);color:#34377a;font-size:10px;font-weight:600;letter-spacing:.06em;}
+  .workflow-panel .field label.title,.workflow-panel .img-field .title{margin-bottom:var(--studio-space-1);font-size:14px;font-weight:600;line-height:1.35;letter-spacing:0;}
+  .workflow-panel .hint,.workflow-panel .img-hint{margin-top:var(--studio-space-2);font-size:12px;line-height:1.45;}
+  .workflow-panel select,.workflow-panel input[type=text],.workflow-panel textarea{min-height:36px;padding:6px 9px;border:1px solid rgba(52,55,122,.24)!important;border-radius:var(--studio-radius-sm);font-size:13px;line-height:1.4;}
+  .workflow-panel textarea{min-height:112px;}
+  .workflow-panel select:focus-visible,.workflow-panel input[type=text]:focus-visible,.workflow-panel textarea:focus-visible{outline:3px solid #34377a;outline-offset:2px;}
+  .workflow-panel .img-gallery{gap:var(--studio-space-2);padding:var(--studio-space-1) 2px var(--studio-space-2);}
+  .workflow-panel .gallery-arrow{border:1px solid rgba(52,55,122,.2);border-radius:50%;}
+  .workflow-panel .upload-btn{min-height:36px;margin-top:var(--studio-space-2);padding:6px 9px;border:1px solid rgba(52,55,122,.2)!important;border-radius:var(--studio-radius-sm);font-size:12px;font-weight:600;line-height:1.4;}
+  .workflow-panel .upload-btn:hover{background:#2bbac8;}
+  .workflow-panel .upload-btn:focus-within{outline:3px solid #34377a;outline-offset:2px;}
+  .workflow-panel .background-actions{gap:var(--studio-space-2);margin-top:var(--studio-space-2);}
+  .workflow-panel .library-upload{margin-top:var(--studio-space-2);}
+  .workflow-panel .field.usp-field{padding-top:var(--studio-space-3);padding-bottom:var(--studio-space-3);}
+  .workflow-panel .chips{gap:var(--studio-space-2);margin-top:var(--studio-space-2);}
+  .workflow-panel .chip-opt{position:relative;min-height:32px;padding:5px 8px;border:1px solid rgba(52,55,122,.24)!important;border-radius:999px;background:#fff;color:#34377a;font-size:12px;font-weight:500;line-height:1.3;box-shadow:none;}
+  .workflow-panel .chip-opt:hover{border-color:#34377a!important;background:#fff8fb;}
+  .workflow-panel .chip-opt.on{border-color:#34377a!important;background:#35c5d2!important;color:#34377a!important;outline:1px solid #34377a;outline-offset:-3px;}
+  .workflow-panel .chip-opt.on::after{content:"✓";margin-left:5px;font-size:11px;font-weight:700;}
+  .workflow-panel .chip-opt input{display:inline-block;position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;}
+  .workflow-panel .chip-opt:focus-within{outline:3px solid #34377a;outline-offset:2px;}
+  .workflow-panel .workflow-primary-action{padding:var(--studio-space-2) var(--studio-space-4) var(--studio-space-2);border:0!important;}
+  .workflow-panel .generate-btn{min-height:48px;padding:var(--studio-space-3) var(--studio-space-4);border-radius:var(--studio-radius-sm);font-size:15px;font-weight:600;letter-spacing:.01em;}
+  .workflow-panel .generate-btn:not(:disabled):hover{background:#900616!important;}
+  .workflow-panel .generate-btn:focus-visible{outline:3px solid #34377a;outline-offset:3px;}
+  .workflow-panel .generate-btn:disabled{background:#807478!important;opacity:1;cursor:not-allowed;}
+  .video-format-fieldset{margin:var(--studio-space-4) 0;}
+  .video-format-fieldset legend{margin-bottom:var(--studio-space-2);font-weight:600;}
+  .video-format-choices{gap:var(--studio-space-2);}
+  .video-format-choice{min-height:80px;border-radius:var(--studio-radius-sm);overflow:hidden;}
+  .video-format-choice>span{border:1px solid rgba(52,55,122,.2);border-radius:var(--studio-radius-sm);font-size:13px;font-weight:500;}
+  .video-format-choice strong{font-size:14px;font-weight:600;}
+  .video-format-choice.selected>span{outline:2px solid #34377a;outline-offset:-3px;}
+  .video-format-choice.selected::after{content:"✓";position:absolute;top:6px;right:7px;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#34377a;color:#fff;font-size:12px;font-weight:700;}
+  .video-format-choice input:focus-visible+span{outline:3px solid #34377a;outline-offset:-3px;}
+  .workspace-canvas{border-radius:var(--studio-radius-md);}
+  .workspace-placeholder{color:rgba(52,55,122,.55);font-size:16px;font-weight:500;letter-spacing:.02em;}
+  .workspace-placeholder span{padding:var(--studio-space-3) var(--studio-space-4);border:1px solid rgba(52,55,122,.12);border-radius:var(--studio-radius-sm);background:rgba(255,255,255,.35);}
+  .output#workspaceOutput{padding:20px;}
+  .output-head h2{font-size:22px;font-weight:600;line-height:1.25;}
+  .output-head span{font-size:13px;line-height:1.45;}
+  .workspace-details{margin-bottom:var(--studio-space-4);}
+  .workspace-details>summary{padding:10px var(--studio-space-3);border:1px solid rgba(52,55,122,.18);border-radius:var(--studio-radius-sm);font-weight:600;}
+  .selected-image-details>summary{border:1px solid rgba(52,55,122,.16);border-radius:var(--studio-radius-sm);font-weight:500;}
+  .footer-note{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--studio-space-4);padding:var(--studio-space-3) 2px 0;font-size:11px;font-weight:500;line-height:1.5;}
+  .footer-note span:last-child{max-width:68%;}
+  @media(max-width:1024px){.brandmark .spectron-logo{width:152px;}.brandmark{gap:var(--studio-space-4);}.brandmark h1{font-size:54px;}}
+  @media(max-width:860px){.wrap{gap:var(--studio-space-3);padding:var(--studio-space-3) var(--studio-space-4) 10px;}.masthead{min-height:82px;padding:var(--studio-space-2) var(--studio-space-3);}.brandmark{gap:var(--studio-space-3);}.brandmark .spectron-logo{width:clamp(100px,20vw,148px);}.brandmark .divider{min-height:54px;}.brandmark h1{font-size:clamp(36px,6vw,48px);font-weight:500;letter-spacing:-1px;}.studio-shell{gap:var(--studio-space-4);}.workflow-panel .field,.workflow-panel .img-field{padding:10px var(--studio-space-3);}.workflow-panel select,.workflow-panel input[type=text],.workflow-panel textarea{min-height:40px;}.workflow-panel .upload-btn{min-height:44px;}.workflow-panel{border-radius:var(--studio-radius-md);}.workflow-panel .panel-head{border-radius:var(--studio-radius-md) var(--studio-radius-md) 0 0;}.workspace-canvas{min-height:400px;}.footer-note{flex-direction:column;gap:var(--studio-space-2);}.footer-note span:last-child{max-width:none;text-align:left;}}
+  @media(max-width:480px){.wrap{padding:var(--studio-space-2) 10px 10px;gap:var(--studio-space-2);}.masthead{min-height:64px;padding:var(--studio-space-2);}.brandmark{gap:var(--studio-space-2);}.brandmark .spectron-logo{width:clamp(72px,22vw,92px);}.brandmark .divider{min-height:40px;}.brandmark h1{font-size:clamp(26px,8vw,34px);letter-spacing:-.8px;}.workflow-panel .panel-head{padding:var(--studio-space-2) var(--studio-space-3);}.workflow-panel .field,.workflow-panel .img-field{padding:var(--studio-space-3);}.workflow-choice{min-height:56px;font-size:14px;}.output#workspaceOutput{padding:var(--studio-space-3);}.workspace-canvas{min-height:340px;}.footer-note{font-size:11px;}}
+  @media(min-width:601px) and (max-width:1024px){.studio-shell{grid-template-columns:minmax(260px,300px) minmax(0,1fr);gap:16px;}}
+  @media(max-width:1024px) and (min-width:861px){.workflow-panel .field,.workflow-panel .img-field{padding:4px 12px;}.workflow-panel select,.workflow-panel input[type=text],.workflow-panel textarea{min-height:34px;padding:5px 8px;}.workflow-panel .upload-btn{min-height:34px;padding:5px 8px;}.workflow-panel .workflow-primary-action{padding-top:4px;padding-bottom:4px;}.workflow-panel .chip-opt{min-height:30px;padding:4px 7px;}}
+  @media(max-width:1024px){.output#workspaceOutput{padding:14px;}}
+  @media(max-width:480px){.output#workspaceOutput{padding:10px;}}
+  @media(max-width:340px){.masthead{min-height:58px;}.brandmark{gap:6px;}.brandmark .spectron-logo{width:66px;}.brandmark .divider{min-height:36px;}.brandmark h1{font-size:25px;letter-spacing:-1px;}}
+
+
+  /* Fixed-height desktop app shell: only the workspace owns the primary scrollbar. */
+  @media(min-width:601px){
+    html,body{height:100%;overflow:hidden;}
+    .wrap{width:100%;height:100dvh;min-height:0;margin:0;padding-bottom:0;display:grid;grid-template-rows:auto minmax(0,1fr);gap:var(--studio-space-3);overflow:hidden;}
+    .masthead{grid-row:1;min-width:0;margin:0;}
+    .studio-shell{grid-row:2;display:grid;height:100%;min-height:0;min-width:0;overflow:hidden;grid-template-columns:minmax(280px,340px) minmax(0,1fr);gap:var(--studio-space-5);align-items:stretch;}
+    .workflow-panel{position:relative;top:auto;align-self:stretch;width:100%;height:100%;min-height:0;max-height:none;border-radius:var(--studio-radius-md) var(--studio-radius-md) 0 0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;scrollbar-width:thin;scrollbar-color:rgba(52,55,122,.32) transparent;background:#f487b8;}
+    .workflow-panel::-webkit-scrollbar{width:7px;}
+    .workflow-panel::-webkit-scrollbar-track{background:transparent;}
+    .workflow-panel::-webkit-scrollbar-thumb{border-radius:8px;background:rgba(52,55,122,.28);}
+    .workspace-canvas{display:flex;flex-direction:column;width:100%;height:100%;min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;scrollbar-gutter:auto;}
+    .workspace-placeholder{position:absolute;}
+    .output#workspaceOutput{flex:1 0 auto;min-height:100%;}
+    .footer-note{flex:none;width:100%;margin-top:auto;}
+  }
+  @media(max-width:600px){
+    html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto;}
+    .wrap{display:flex;width:100%;height:auto;min-height:100dvh;margin:0;overflow:visible;}
+    .masthead{flex:none;grid-row:auto;}
+    .studio-shell{display:grid;grid-row:auto;grid-template-columns:minmax(0,1fr);width:100%;height:auto;min-height:0;overflow:visible;}
+    .workflow-panel{position:static;top:auto;align-self:stretch;width:100%;height:auto;min-height:0;max-height:none;overflow:visible;border-radius:var(--studio-radius-md);}
+    .workspace-canvas{position:relative;display:flex;flex-direction:column;width:100%;height:auto;min-height:340px;overflow:visible;overscroll-behavior:auto;scrollbar-gutter:auto;}
+    .output#workspaceOutput{flex:none;min-height:0;}
+    .footer-note{flex:none;width:100%;margin-top:var(--studio-space-5);}
+  }
+
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="masthead">
+  <header class="masthead">
     <div class="brandmark">
       <img class="spectron-logo" src="spectron-logo.webp" alt="Spectron Toy Company">
-      <div class="divider"></div>
-      <div>
-        <h1>Social Studio</h1>
-      </div>
+      <div class="divider" aria-hidden="true"></div>
+      <div><h1>Social Studio</h1></div>
     </div>
-  </div>
-  <div class="hazard"></div>
+  </header>
 
-  <div class="grid">
-
-    <!-- CONTROL PANEL -->
-    <div class="panel">
-      <div class="panel-head">
-        <span>SPEC SHEET</span>
-        <span id="stepIndicator">0/3 INGEVULD</span>
-      </div>
-
+  <main class="grid studio-shell" id="studioShell">
+    <aside class="panel workflow-panel" id="workflowPanel" aria-label="Social Studio workflow">
+      <div class="panel-head"><span id="workflowTitle">Kies format</span><span id="stepIndicator" hidden>0/3 INGEVULD</span><button type="button" id="workflowBack" class="workflow-back" onclick="showWorkflowChooser()" hidden aria-label="Terug naar Kies format">&#8592; Kies format</button></div>
+      <nav id="workflowChooser" class="workflow-chooser" aria-label="Kies een workflow">
+        <button type="button" class="workflow-choice" id="chooseAdvertisement" onclick="showStudioWorkflow('advertisement')">Maak een Social Advertentie</button>
+        <button type="button" class="workflow-choice" id="chooseVideo" onclick="showStudioWorkflow('video')">Maak een Social Video</button>
+      </nav>
+      <section id="brandImageStep" class="workflow-fields" hidden aria-label="STAP 01: Kies een merk">
       <div class="field">
         <span class="field-num">STAP 01</span>
         <label class="title" for="brand">Kies een merk</label>
@@ -1186,7 +1366,6 @@ button:disabled{opacity:.5;cursor:not-allowed;}
         </select>
         <p class="hint">De gekozen merkstem wordt gebruikt voor alle content.</p>
       </div>
-
       <div class="img-field">
         <label class="title" style="font-size:15px;">Merkbeelden</label>
         <div class="gallery-wrap">
@@ -1195,10 +1374,10 @@ button:disabled{opacity:.5;cursor:not-allowed;}
           <button type="button" class="gallery-arrow next" hidden onclick="scrollGallery(1)" aria-label="Volgende beelden">&rsaquo;</button>
         </div>
         <label class="upload-btn">
-          <span class="icon" aria-hidden="true">&#8679;</span> Upload your own photo
+          <span class="icon" aria-hidden="true">&#8679;</span> Upload een eigen beeld
           <input type="file" id="uploadInput" accept="image/*">
         </label>
-        <p class="img-hint">Upload een merk- of productbeeld voor de advertentie.</p>
+        <p class="img-hint">Upload een merk- of productbeeld voor deze content.</p>
         <button type="button" class="upload-btn" id="backgroundButton" onclick="openBackground()" hidden>AI Background</button>
         <div id="backgroundPanel" hidden style="margin-top:12px;">
           <label for="backgroundDescription">Beschrijf de gewenste achtergrond</label>
@@ -1212,13 +1391,15 @@ button:disabled{opacity:.5;cursor:not-allowed;}
         <div class="background-actions">
           <button type="button" class="upload-btn" id="backgroundAccept" onclick="acceptBackground()" hidden>Afbeelding gebruiken</button>
           <button type="button" class="upload-btn" id="backgroundRestore" onclick="restoreBackground()">Terug naar origineel</button>
-        <label class="upload-btn">
-          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M3 6.5h7l2 2h9v9.5A2 2 0 0 1 19 20H5a2 2 0 0 1-2-2V6.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span> <span id="libraryUploadLabel">Fotobibliotheek van geselecteerd merk updaten</span>
-          <input type="file" id="libraryUploadInput" accept="image/*" multiple>
-        </label>
         </div>
       </div>
-
+        <label class="upload-btn library-upload">
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M3 6.5h7l2 2h9v9.5A2 2 0 0 1 19 20H5a2 2 0 0 1-2-2V6.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+          <span id="libraryUploadLabel">Fotobibliotheek van geselecteerd merk updaten</span>
+          <input type="file" id="libraryUploadInput" accept="image/*" multiple>
+        </label>
+      </section>
+      <section id="advertisementFields" class="workflow-fields" hidden aria-label="Social Advertentie instellingen">
       <div class="field">
         <span class="field-num">STAP 02</span>
         <label class="title">Platform &amp; toon</label>
@@ -1254,38 +1435,45 @@ button:disabled{opacity:.5;cursor:not-allowed;}
         <label class="title" style="font-size:15px;">Actie / aanleiding <span style="color:var(--steel);font-weight:500;">(optioneel)</span></label>
         <input type="text" id="promo" placeholder="bijv. Nieuwe collectie live, -20% deze week">
       </div>
-
-            <div class="field ai-video-controls">
+      <div class="field workflow-hidden-controls" hidden>
         <label class="title" for="outputType">Output type</label>
-        <select id="outputType" onchange="updateVideoMode()" aria-describedby="aiVideoHelp">
-          <option value="image" selected>Image</option><option value="ai-video">AI Video</option>
-        </select>
+        <select id="outputType" onchange="updateVideoMode()" aria-describedby="aiVideoHelp"><option value="image" selected>Image</option><option value="ai-video">AI Video</option></select>
         <div id="videoOptions" hidden aria-hidden="true"><select id="videoDuration"><option value="3">3 seconds</option><option value="4" selected>4 seconds</option><option value="5">5 seconds</option></select><select id="videoMotion"><option value="zoom-in" selected>Slow Zoom In</option><option value="zoom-out">Slow Zoom Out</option><option value="pan-right">Pan Left to Right</option><option value="pan-left">Pan Right to Left</option></select></div>
-        <div id="aiVideoOptions" hidden>
-          <p id="aiVideoHelp" class="hint">Gebruik de geselecteerde Brand Image voor een echt vier seconden AI Video met Google Veo.</p>
-          <p id="aiVideoNoImage" class="hint" role="status">Select a Brand Image first.</p>
-          <img id="aiVideoSourcePreview" class="ai-video-source" alt="Selected Brand Image preview" hidden>
-          <label for="aiVideoPrompt">AI Video prompt</label>
-          <textarea id="aiVideoPrompt" rows="5" maxlength="4000"></textarea>
-          <label for="aiVideoAspect">Aspect ratio</label>
-          <select id="aiVideoAspect"><option value="9:16" selected>Portrait 9:16</option><option value="16:9">Landscape 16:9</option></select>
-          <p id="aiVideoSquareHint" class="hint" hidden>Veo maakt geen vierkante video. Kies 16:9 of 9:16.</p>
-          <button type="button" class="upload-btn" id="generateAIVideoBtn" onclick="generateAIVideo()" disabled>Generate AI Video</button>
-        </div>
       </div>
       <input type="hidden" id="variantCount" value="4">
-
-      <div class="field" style="border-bottom:none; padding-top:6px;">
-        <button class="generate-btn" id="generateBtn" onclick="generateAds()">
-          Genereer advertentie <span class="arrow" aria-hidden="true">&rarr;</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- OUTPUT -->
-    <div class="output">
+      <div class="field workflow-primary-action"><button class="generate-btn" id="generateBtn" onclick="generateAds()">Genereer advertentie <span class="arrow" aria-hidden="true">&rarr;</span></button></div>
+      </section>
+      <section id="videoFields" class="workflow-fields" hidden aria-label="Social Video instellingen">
+        <div class="field video-step">
+          <div id="aiVideoOptions" hidden>
+            <p id="aiVideoHelp" class="hint">Gebruik de geselecteerde Brand Image voor een echt vier seconden AI Video met Google Veo.</p>
+            <p id="aiVideoNoImage" class="hint" role="status">Selecteer eerst een merkbeeld.</p>
+            <details class="selected-image-details">
+              <summary>Geselecteerd merkbeeld bekijken</summary>
+              <img id="aiVideoSourcePreview" class="ai-video-source" alt="Geselecteerd merkbeeld voor de video" hidden>
+            </details>
+            <label class="title" for="aiVideoPrompt">Omschrijf je video</label>
+            <textarea id="aiVideoPrompt" rows="5" maxlength="4000"></textarea>
+            <fieldset class="video-format-fieldset">
+              <legend>Kies formaat</legend>
+              <div class="video-format-choices" role="group" aria-label="Kies videoformaat">
+                <label class="video-format-choice selected"><input type="radio" name="studioVideoFormat" value="9:16" checked onchange="selectAIVideoFormat(this.value)"><span><strong>Staand</strong><span>9:16</span></span></label>
+                <label class="video-format-choice"><input type="radio" name="studioVideoFormat" value="16:9" onchange="selectAIVideoFormat(this.value)"><span><strong>Liggend</strong><span>16:9</span></span></label>
+              </div>
+            </fieldset>
+            <label for="aiVideoAspect" class="visually-hidden">Aspect ratio</label>
+            <select id="aiVideoAspect" class="visually-hidden" aria-hidden="true" tabindex="-1"><option value="9:16" selected>Staand 9:16</option><option value="16:9">Liggend 16:9</option></select>
+            <p id="aiVideoSquareHint" class="hint" hidden>Veo maakt geen vierkante video. Kies 16:9 of 9:16.</p>
+            <button type="button" class="generate-btn" id="generateAIVideoBtn" onclick="generateAIVideo()" disabled>Genereer mijn video</button>
+          </div>
+        </div>
+      </section>
+    </aside>
+    <section class="workspace-canvas" id="workspaceCanvas" aria-label="Social Studio canvas">
+      <div class="workspace-placeholder" id="workspacePlaceholder" aria-hidden="true"><span>[canvas]</span></div>
+    <div class="output" id="workspaceOutput" hidden>
       <div class="output-head">
-        <h2>Gegenereerde content</h2>
+        <h2 id="workspaceHeading">Gegenereerde content</h2>
         <div style="display:flex;align-items:center;gap:12px;">
           <span id="outputMeta">nog niets gegenereerd</span>
           <button id="downloadAllBtn" class="dl-all-btn" onclick="downloadAllVariants()" style="display:none;">&#8595; Download alles (.txt)</button>
@@ -1293,6 +1481,8 @@ button:disabled{opacity:.5;cursor:not-allowed;}
       </div>
       <p style="font-size:12px;color:var(--steel);margin:-8px 0 16px;">Klik in een kop, body of CTA hieronder om direct te bewerken — downloads gebruiken automatisch je aanpassingen.</p>
 
+      <details class="workspace-details" id="advancedAdjustments" hidden>
+      <summary>Geavanceerde beeld- en tekstinstellingen</summary>
       <div class="img-adjust" id="imgAdjust" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
           <span style="font-family:'Nunito Sans',sans-serif; font-weight:900; font-size:14px; letter-spacing:.35px; text-transform:uppercase;">Beeld &amp; tekst aanpassen</span>
@@ -1321,6 +1511,7 @@ button:disabled{opacity:.5;cursor:not-allowed;}
           </div>
         </div>
       </div>
+      </details>
 
       <div id="studioStatus" role="status" aria-live="polite"></div>
       <div id="resultsArea"></div>
@@ -1333,13 +1524,12 @@ button:disabled{opacity:.5;cursor:not-allowed;}
       <div class="card-dl-row library-actions"><button class="card-dl-btn" onclick="document.getElementById('duplicateDialog').close()">Annuleren</button>
       <button class="card-dl-btn" id="confirmDuplicate" onclick="confirmDuplicate()" disabled>Maak batch</button></div></dialog>
     </div>
-
-  </div>
-
-  <div class="footer-note">
-    <span>SPECTRON TOYS &copy; 2026 — SOCIAL STUDIO</span>
-    <span>Tekst wordt per keer gegenereerd, controleer altijd op merk- en feitelijke juistheid vóór publicatie.</span>
-  </div>
+      <footer class="footer-note">
+        <span>SPECTRON TOYS &copy; 2026 — SOCIAL STUDIO</span>
+        <span>Tekst wordt per keer gegenereerd, controleer altijd op merk- en feitelijke juistheid vóór publicatie.</span>
+      </footer>
+    </section>
+  </main>
 
 </div>
 
@@ -1361,6 +1551,84 @@ const BRAND_IMAGES = {
   "TOMY":brandSet("tomy"), "YCOO":brandSet("ycoo")
 };
 
+let activeStudioWorkflow = null;
+const studioWorkflowResultCache = {advertisement: document.createDocumentFragment(), video: document.createDocumentFragment()};
+const studioWorkflowViewState = {advertisement:null, video:null};
+function saveStudioWorkflowView(workflow){
+  if(!workflow) return;
+  const results=document.getElementById('resultsArea');
+  const fragment=studioWorkflowResultCache[workflow];
+  while(results?.firstChild) fragment.append(results.firstChild);
+  const advanced=document.getElementById('advancedAdjustments');
+  studioWorkflowViewState[workflow]={meta:document.getElementById('outputMeta')?.textContent||'',download:document.getElementById('downloadAllBtn')?.style.display||'none',adjustDisplay:document.getElementById('imgAdjust')?.style.display||'none',advancedHidden:advanced?.hidden??true,advancedOpen:advanced?.open??false};
+}
+function restoreStudioWorkflowView(workflow){
+  const results=document.getElementById('resultsArea');
+  if(results){results.replaceChildren();results.append(studioWorkflowResultCache[workflow]);}
+  const state=studioWorkflowViewState[workflow];
+  const advanced=document.getElementById('advancedAdjustments');
+  const adjustments=document.getElementById('imgAdjust');
+  const savedLibrary=document.getElementById('savedLibrary');
+  const download=document.getElementById('downloadAllBtn');
+  document.getElementById('outputMeta').textContent=state?.meta|| (workflow==='video'?'Nog geen video gegenereerd':'Nog geen advertenties gegenereerd');
+  document.getElementById('workspaceHeading').textContent=workflow==='video'?'Social Video':'Social Advertenties';
+  if(download)download.style.display=workflow==='advertisement'?(state?.download||'none'):'none';
+  if(adjustments)adjustments.style.display=workflow==='advertisement'?(state?.adjustDisplay||'none'):'none';
+  if(advanced){advanced.hidden=workflow!=='advertisement'||(state?.advancedHidden??true);advanced.open=workflow==='advertisement'&&!!state?.advancedOpen;}
+  if(savedLibrary)savedLibrary.hidden=workflow!=='advertisement';
+}
+function showStudioWorkflow(workflow){
+  if(!['advertisement','video'].includes(workflow)) return false;
+  if(activeStudioWorkflow===workflow) return true;
+  if(adGenerationInProgress){studioNotice('Wacht tot de huidige generatie is voltooid voordat je van workflow wisselt.');return false;}
+  saveStudioWorkflowView(activeStudioWorkflow);
+  activeStudioWorkflow=workflow;
+  document.getElementById('workflowTitle').textContent=workflow==='video'?'Social Video':'Social Advertentie';
+  document.getElementById('workflowChooser').hidden=true;
+  document.getElementById('workflowBack').hidden=false;
+  document.getElementById('brandImageStep').hidden=false;
+  document.getElementById('advertisementFields').hidden=workflow!=='advertisement';
+  document.getElementById('videoFields').hidden=workflow!=='video';
+  document.getElementById('stepIndicator').hidden=workflow!=='advertisement';
+  document.getElementById('workspacePlaceholder').hidden=true;
+  document.getElementById('workspaceOutput').hidden=false;
+  document.getElementById('outputType').value=workflow==='video'?'ai-video':'image';
+  restoreStudioWorkflowView(workflow);
+  updateVideoMode();
+  if(workflow==='video'&&typeof syncAIVideoImage==='function')syncAIVideoImage();
+  document.getElementById(workflow==='video'?'chooseVideo':'chooseAdvertisement').setAttribute('aria-pressed','true');
+  document.getElementById(workflow==='video'?'chooseAdvertisement':'chooseVideo').setAttribute('aria-pressed','false');
+  return true;
+}
+function showWorkflowChooser(){
+  if(adGenerationInProgress){studioNotice('Wacht tot de huidige generatie is voltooid voordat je teruggaat naar Kies format.');return false;}
+  saveStudioWorkflowView(activeStudioWorkflow);
+  activeStudioWorkflow=null;
+  document.getElementById('workflowTitle').textContent='Kies format';
+  document.getElementById('workflowChooser').hidden=false;
+  document.getElementById('workflowBack').hidden=true;
+  document.getElementById('brandImageStep').hidden=true;
+  document.getElementById('advertisementFields').hidden=true;
+  document.getElementById('videoFields').hidden=true;
+  document.getElementById('stepIndicator').hidden=true;
+  document.getElementById('workspaceOutput').hidden=true;
+  document.getElementById('workspacePlaceholder').hidden=false;
+  document.getElementById('outputType').value='image';
+  if(typeof updateVideoMode==='function')updateVideoMode();
+  document.getElementById('chooseAdvertisement').setAttribute('aria-pressed','false');
+  document.getElementById('chooseVideo').setAttribute('aria-pressed','false');
+  return true;
+}
+function syncStudioVideoFormatButtons(ratio=document.getElementById('aiVideoAspect')?.value){
+  document.querySelectorAll('input[name="studioVideoFormat"]').forEach(input=>{input.checked=input.value===ratio;input.closest('.video-format-choice')?.classList.toggle('selected',input.checked);});
+}
+function selectAIVideoFormat(ratio){
+  if(!['9:16','16:9'].includes(ratio)) return;
+  const select=document.getElementById('aiVideoAspect');
+  if(select)select.value=ratio;
+  window.__studioVideoAspectChosen=true;
+  syncStudioVideoFormatButtons(ratio);
+}
 let currentVariants = [];
 let currentPlatform = "";
 let currentProduct = "";
@@ -2042,6 +2310,11 @@ function toggleChip(el){
 }
 document.querySelectorAll('.chip-opt').forEach(el=>{
   el.addEventListener('click', (e)=>{
+    const checkbox=el.querySelector('input[type="checkbox"]');
+    if(e.target===checkbox){
+      setTimeout(()=>el.classList.toggle('on',checkbox.checked),0);
+      return;
+    }
     e.preventDefault();
     toggleChip(el);
   });
@@ -2294,6 +2567,7 @@ function renderResults(variants, platform, product, isOffline, target=null){
   html += `</div>`;
   resultsArea.innerHTML = html;
   document.getElementById('imgAdjust').style.display = variants.length ? 'block' : 'none';
+  document.getElementById('advancedAdjustments').hidden = !variants.length;
   currentVariants = variants;
   currentPlatform = platform;
   currentProduct = product;
@@ -2385,6 +2659,7 @@ document.getElementById('uspChips').addEventListener('click', ()=> setTimeout(up
 updateStepIndicator();
 updateFormatOptions();
 renderImageGallery();
+showWorkflowChooser();
 </script>
 <script src="animated-video.js"></script>
 <script src="ai-video.js"></script>
