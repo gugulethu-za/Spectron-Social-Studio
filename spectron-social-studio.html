@@ -1326,6 +1326,13 @@ button:disabled{opacity:.5;cursor:not-allowed;}
     .footer-note{flex:none;width:100%;margin-top:var(--studio-space-5);}
   }
 
+  .selected-image-details{margin:4px 0;}
+  .selected-image-details>summary{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;max-width:none;padding:0;border:1px solid rgba(52,55,122,.16);border-radius:var(--studio-radius-sm);background:#fff;color:#34377a;font-size:0;list-style:none;cursor:pointer;}
+  .selected-image-details>summary::-webkit-details-marker{display:none;}
+  .selected-image-details>summary::marker{content:"";}
+  .selected-image-details>summary::after{content:"›";font-size:22px;line-height:1;}
+  .selected-image-details[open]>summary::after{transform:rotate(90deg);}
+
 </style>
 </head>
 <body>
@@ -1437,7 +1444,7 @@ button:disabled{opacity:.5;cursor:not-allowed;}
       </div>
       <div class="field workflow-hidden-controls" hidden>
         <label class="title" for="outputType">Output type</label>
-        <select id="outputType" onchange="updateVideoMode()" aria-describedby="aiVideoHelp"><option value="image" selected>Image</option><option value="ai-video">AI Video</option></select>
+        <select id="outputType" onchange="updateVideoMode()"><option value="image" selected>Image</option><option value="ai-video">AI Video</option></select>
         <div id="videoOptions" hidden aria-hidden="true"><select id="videoDuration"><option value="3">3 seconds</option><option value="4" selected>4 seconds</option><option value="5">5 seconds</option></select><select id="videoMotion"><option value="zoom-in" selected>Slow Zoom In</option><option value="zoom-out">Slow Zoom Out</option><option value="pan-right">Pan Left to Right</option><option value="pan-left">Pan Right to Left</option></select></div>
       </div>
       <input type="hidden" id="variantCount" value="4">
@@ -1446,10 +1453,8 @@ button:disabled{opacity:.5;cursor:not-allowed;}
       <section id="videoFields" class="workflow-fields" hidden aria-label="Social Video instellingen">
         <div class="field video-step">
           <div id="aiVideoOptions" hidden>
-            <p id="aiVideoHelp" class="hint">Gebruik de geselecteerde Brand Image voor een echt vier seconden AI Video met Google Veo.</p>
-            <p id="aiVideoNoImage" class="hint" role="status">Selecteer eerst een merkbeeld.</p>
-            <details class="selected-image-details">
-              <summary>Geselecteerd merkbeeld bekijken</summary>
+            <details class="selected-image-details" hidden>
+              <summary aria-label="Toon voorbeeld van het geselecteerde merkbeeld"><span aria-hidden="true"></span></summary>
               <img id="aiVideoSourcePreview" class="ai-video-source" alt="Geselecteerd merkbeeld voor de video" hidden>
             </details>
             <label class="title" for="aiVideoPrompt">Omschrijf je video</label>
@@ -1464,7 +1469,8 @@ button:disabled{opacity:.5;cursor:not-allowed;}
             <label for="aiVideoAspect" class="visually-hidden">Aspect ratio</label>
             <select id="aiVideoAspect" class="visually-hidden" aria-hidden="true" tabindex="-1"><option value="9:16" selected>Staand 9:16</option><option value="16:9">Liggend 16:9</option></select>
             <p id="aiVideoSquareHint" class="hint" hidden>Veo maakt geen vierkante video. Kies 16:9 of 9:16.</p>
-            <button type="button" class="generate-btn" id="generateAIVideoBtn" onclick="generateAIVideo()" disabled>Genereer mijn video</button>
+            <button type="button" class="generate-btn" id="generateAIVideoBtn" onclick="generateAIVideo()">Genereer mijn video</button>
+            <p id="aiVideoNoImage" class="hint" role="alert" hidden>Selecteer eerst een merkbeeld.</p>
           </div>
         </div>
       </section>
