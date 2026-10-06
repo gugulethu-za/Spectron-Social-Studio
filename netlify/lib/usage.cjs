@@ -1,3 +1,4 @@
+const { failureDetails } = require('./veo-failure.cjs');
 const { randomUUID } = require('node:crypto');
 const { getStore, connectLambda } = require('@netlify/blobs');
 const STORE = 'spectron-ai-usage';
@@ -49,6 +50,7 @@ function responseDetails(base, response, data) {
     const samples = data?.response?.generateVideoResponse?.generatedSamples || data?.response?.generatedVideos;
     result.videoCount = Array.isArray(samples) ? samples.filter(s => s?.video?.uri).length : 0;
     result.operationState = data?.done === true ? (data.error || !result.videoCount ? 'failed' : 'completed') : data?.done === false || (data && data.done === undefined) ? 'pending' : 'unknown';
+    if (result.operationState === 'failed') result.failureReason = failureDetails(data).reason;
   }
   return result;
 }
@@ -132,7 +134,7 @@ function summarize(records) {
     for (const group of [totals, days[day] ||= emptyTotals(), weeks[week] ||= emptyTotals(), features[r.feature] ||= emptyTotals()]) add(group, r);
   }
   // Operation names stay server-side. Polls/downloads are visible as calls, never new generations.
-  const recent = rows.slice(-50).reverse().map(({operation, ...r}) => r);
+  const recent = rows.slice(-50).reverse().map(({operation, failureReason, ...r}) => r);
   return {timezone:TIMEZONE, trackingSince:rows[0]?.timestamp || null, generatedAt:new Date().toISOString(), totals, days, weeks, features, incompleteRecords, recent};
 }
 async function readSummary(event, storeFactory = openStore) {
