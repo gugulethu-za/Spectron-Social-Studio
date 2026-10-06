@@ -53,14 +53,35 @@ for(const ratio of ['9:16','16:9']) test(`${ratio}: selector, crop, start payloa
   await ctx.pollAIVideo('operations/mock-video');
   assert.equal(els.aiVideoPreview.dataset.previewRatio,ratio==='9:16'?'portrait':'landscape');
   assert.match(els.resultsArea.innerHTML,new RegExp(`ai-video-frame-${ratio==='9:16'?'portrait':'landscape'}`));
+  assert.equal(els.aiVideoPreview.controls,true);
+  assert.equal(els.aiVideoPreview.src,'blob:mock');
+  assert.match(els.resultsArea.innerHTML,/href="\/\.netlify\/functions\/download-veo-video\?operation=operations%2Fmock-video"/);
  }finally{usage.trackedFetch=originalTracked;delete require.cache[startPath];delete require.cache[wrapperPath];if(originalKey===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=originalKey;}
+});
+
+for(const mobile of [false,true]) test(`portrait fits ${mobile?'mobile viewport':'desktop canvas'} and resizes`,()=>{
+ let height;
+ const frame={offsetHeight:500,getBoundingClientRect:()=>({top:120}),style:{setProperty(key,value){assert.equal(key,'--ai-video-preview-height');height=Number.parseFloat(value);}}};
+ const canvas={clientHeight:700,scrollTop:0,getBoundingClientRect:()=>({top:40})};
+ const elements={aiVideoFrame:frame,workspaceCanvas:canvas,resultsArea:{scrollHeight:580}};
+ const window={innerWidth:mobile?390:1200,innerHeight:800,visualViewport:{height:800,addEventListener(){}},addEventListener(){}};
+ const ctx=vm.createContext({window,document:{getElementById:id=>elements[id]}});
+ vm.runInContext(source,ctx);ctx.sizeAIVideoPreview();
+ assert.equal(height,(mobile?800:700)-80-80-24);
+ const width=Math.min(mobile?350:900,height*9/16);
+ assert.ok(width*16/9+80+80+24<=(mobile?800:700));
+ window.visualViewport.height=500;ctx.sizeAIVideoPreview();
+ assert.equal(height,316,'shrinking viewport reserves header, actions and padding');
+ canvas.scrollTop=30;frame.getBoundingClientRect=()=>({top:90});ctx.sizeAIVideoPreview();
+ assert.equal(height,316,'canvas scrolling does not change the intrinsic height budget');
 });
 
 test('preview fills explicit frames without layout padding or white background',()=>{
  assert.match(page,/\.ai-video-result\{gap:10px;padding:0;background:transparent;/);
  assert.match(page,/\.ai-video-frame-portrait\{aspect-ratio:9\/16;/);
- assert.match(page,/\.ai-video-frame-landscape\{aspect-ratio:16\/9;/);
- assert.match(page,/\.ai-video-frame \.video-preview\{[^}]*width:100%;height:100%;[^}]*object-fit:cover;[^}]*background:#000;position:absolute;inset:0;/);
+ assert.match(page,/\.ai-video-frame-landscape\{aspect-ratio:16\/9;width:100%;/);
+ assert.match(page,/width:min\(100%,calc\(var\(--ai-video-preview-height/);
+ assert.match(page,/\.ai-video-frame \.video-preview\{[^}]*width:100%;height:100%;[^}]*object-fit:contain;[^}]*background:#000;position:absolute;inset:0;/);
 });
 
 test('image decode failure stops before a paid start',async()=>{

@@ -86,5 +86,5 @@ test('third-party guardrails produce a content-filter message and no one-click r
     assert.match(elements.resultsArea.innerHTML,/Starting again may create another paid video/);
     assert.equal(calls,1);
   }
-  assert.match(fs.readFileSync('spectron-social-studio.html','utf8'),/ai-video\.js\?v=content-filter-2/);
+  assert.match(fs.readFileSync('spectron-social-studio.html','utf8'),/ai-video\.js\?v=portrait-preview-3/);
 });
