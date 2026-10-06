@@ -1,0 +1,15 @@
+{
+  "name": "spectron-social-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Spectron static studio and Netlify functions",
+  "scripts": {
+    "test:usage": "node --test test-usage.cjs"
+  },
+  "dependencies": {
+    "@netlify/blobs": "11.1.3"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

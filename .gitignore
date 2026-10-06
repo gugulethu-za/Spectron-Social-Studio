@@ -5,3 +5,6 @@
 
 # Local Netlify folder
 .netlify
+
+# Installed dependencies
+node_modules/

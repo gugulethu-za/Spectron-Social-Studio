@@ -2,6 +2,9 @@
   publish = "."
   functions = "netlify/functions"
 
+[build.environment]
+  NODE_VERSION = "22"
+
 [[redirects]]
   from = "/"
   to = "/spectron-social-studio.html"
@@ -12,3 +15,8 @@
   [headers.values]
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[redirects]]
+  from = "/usage"
+  to = "/usage.html"
+  status = 200

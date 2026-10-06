@@ -1,3 +1,4 @@
+const { trackedFetch } = require('../lib/usage.cjs');
 exports.handler = async function handler(event) {
   if (event.httpMethod !== "POST") {
     return {
@@ -24,7 +25,7 @@ exports.handler = async function handler(event) {
       };
     }
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
+    const response = await trackedFetch(event, {provider:'gemini', feature:'ad-text', requestType:'generate', model:'gemini-2.5-flash'}, "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

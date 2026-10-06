@@ -174,3 +174,41 @@ Close older Spectron tabs if a database upgrade is blocked.
 
 Run `node test-brand-images.cjs` for persistence, gallery selection, duplicate
 prevention, and advertisement rendering checks, in addition to the two existing tests.
+
+
+## AI usage dashboard
+
+Open `/usage` directly (there is no link in the app navigation) to view Gemini text/image token usage and Veo video activity. The dashboard API requires the `USAGE_DASHBOARD_PASSWORD` environment variable and HTTP Basic credentials (`usage` as the username). The page provides a password form; credentials remain only in page memory and are cleared on lock/reload. Use HTTPS in production. The static page contains no usage data or credentials.
+
+### Netlify setup
+
+1. Install the locked dependency with `npm ci` (Node 22.12+; `netlify.toml` selects Node 22 for builds).
+2. Set `USAGE_DASHBOARD_PASSWORD` in the Netlify site's environment variables, with Functions scope, before a separately authorized deployment. The local `.env` is ignored and is not a substitute for configuring production. Do not put the password in `netlify.toml`, source files or the browser bundle.
+3. Netlify Functions provision/access the site-wide `spectron-ai-usage` Blobs store using runtime credentials. No browser storage credentials or extra database are required. The legacy Lambda handlers initialize the SDK from `event.blobs`.
+4. After deployment, verify password protection and Blobs connectivity by opening `/usage`. An authenticated empty dashboard verifies the read path without a paid generation. The implementation was tested against the real SDK's local disk-backed server; production account access remains to be verified.
+
+Run `netlify dev --offline --port 8888` to use local functions and local Blobs. Opening the HTML directly as a file cannot read server-side usage. Production data uses the `production/` prefix; local data uses `local/`; previews use a separate prefix per deploy. Production records survive deployments. Do not delete the site/store if historical usage must be retained.
+
+### Meaning of the totals
+
+- Gemini: outbound requests, successful/failed/unknown responses, and provider-reported input/output/total tokens. Thinking and cache counts are shown separately but never added again to the reported total. Missing metadata is unknown, not zero. Image generation uses the same `usageMetadata` parser, including modality breakdowns when present.
+- Veo: starts, accepted operations, completed/failed/pending/unknown generations, returned videos, requested seconds and estimated output seconds. Credits and billed costs are not supplied by the current `predictLongRunning` response and are not invented. Estimated output seconds equal requested duration times the returned video count for completed operations.
+- Status checks, downloads and model-access diagnostics are recorded as calls, not generations. The operation name joins start and status records, so repeated polls/downloads do not increase completed-generation counts. Production AI Video and the Veo test page have separate feature labels.
+- A batch of four ad variants is one API generation request. Local fallback copy and browser-rendered video are not API generations. A Gemini error followed by local fallback remains a recorded failed/unknown Gemini attempt.
+- Dates use Africa/Johannesburg; weeks start Monday. A generation is assigned to its request date, even if its final Veo status arrives later. All-time means since the first retained record; external apps and earlier usage cannot be reconstructed.
+
+### Persistence and failure behaviour
+
+Each API call gets a UUID and two immutable JSON entries (request and result), stored under a date prefix. Conditional create-only writes make storage retries idempotent and prevent a late request write overwriting its result. Every list page is read before totals are returned. No shared mutable counter is used.
+
+Storage writes are awaited, have a 700 ms deadline and one retry per phase, and never retry a Google API call. If storage fails, generation continues and a sanitized server warning is logged. A missing result is shown as incomplete; if both writes fail, that call cannot appear in the dashboard. A process crash between the request record and the actual outbound call may leave an uncertain attempt. This is operational reporting, not a guaranteed billing ledger.
+
+Blobs uses eventual consistency; records may take up to a minute to appear. Dashboard reads have a 20-second deadline and fail visibly rather than presenting partial totals as complete. Full-history aggregation suits a modest-volume studio; if volume exceeds that budget, add cached daily summaries before scaling usage.
+
+No background Veo polling was added. If the browser closes, a job stays pending until a later status/download request observes completion. API timeouts with no operation ID remain unknown, since the provider may have accepted the request.
+
+Only allowlisted metadata is stored: timestamps, feature/model, counts, status and operation IDs. Prompts, generated text, images, videos, signed media URLs and API keys are excluded. The dashboard response also excludes operation IDs.
+
+### Verification
+
+`npm run test:usage` covers response preservation, token parsing, 30 concurrent requests, storage retries/timeouts, network errors, Veo deduplication, time zones, pagination, password enforcement and the actual Netlify Blobs SDK with a local disk-backed store. All Google calls in that integration test are mocked. Existing `test-*.cjs` scripts cover the studio's other behaviour. No paid API call is needed to run the tests.

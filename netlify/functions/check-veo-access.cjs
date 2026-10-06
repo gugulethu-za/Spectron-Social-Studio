@@ -1,3 +1,4 @@
+const { trackedFetch } = require('../lib/usage.cjs');
 const MODELS_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 function reply(statusCode, body, extraHeaders = {}) { return {statusCode, headers:{'Content-Type':'application/json', ...extraHeaders}, body:JSON.stringify(body)}; }
 exports.handler = async function handler(event) {
@@ -5,7 +6,7 @@ exports.handler = async function handler(event) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return reply(500, {error:'GEMINI_API_KEY is not configured on the server.'});
   try {
-    const response = await fetch(MODELS_URL, {method:'GET', headers:{'x-goog-api-key':apiKey}, signal:AbortSignal.timeout(20000)});
+    const response = await trackedFetch(event, {provider:'veo', feature:'veo-access-check', requestType:'diagnostic'}, MODELS_URL, {method:'GET', headers:{'x-goog-api-key':apiKey}, signal:AbortSignal.timeout(20000)});
     if (response.status === 401) return reply(401, {error:'The configured Gemini API key is invalid.'});
     if (response.status === 403) return reply(403, {error:'The configured Gemini API key is not permitted to list Gemini models.'});
     if (response.status === 429) return reply(429, {error:'The Gemini API quota or billing limit was reached.'});
