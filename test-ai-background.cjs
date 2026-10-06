@@ -53,10 +53,10 @@ const event = data => ({httpMethod:'POST',body:JSON.stringify(data)});
  const elements = new Map();
  const el = id => {if(!elements.has(id)) elements.set(id,{value:'',hidden:false,disabled:false,textContent:'',setAttribute(){},removeAttribute(){},focus(){}}); return elements.get(id);};
  let resolveRequest, requests=0, sources=[];
- const context = vm.createContext({console,AbortController,setTimeout,clearTimeout,selectedImage:null,uploadedImages:[],brandImageRecords:[],crypto:require('node:crypto').webcrypto,
+ const context = vm.createContext({console,AbortController,setTimeout,clearTimeout,selectedImage:null,uploadedImages:[],brandImageRecords:[],crypto:require('node:crypto').webcrypto,atob,localStorage:{getItem(){return null;},setItem(){}},
   async persistBrandImage(record){if(!context.brandImageRecords.some(item=>item.image===record.image)) context.brandImageRecords.push(record);},
   document:{getElementById:el,querySelectorAll:()=>[]},
-  fetch:async(url)=>{assert.equal(url,'/.netlify/functions/generate-ai-image');requests++;return new Promise(resolve=>{resolveRequest=resolve;});},
+  fetch:async(url)=>{assert.match(url,/^\/\.netlify\/functions\/generate-ai-image\?requestId=/);requests++;return new Promise(resolve=>{resolveRequest=resolve;});},
   selectImage(src){context.selectedImage=src;vm.runInContext('syncBackgroundImage()',context);}
  });
  vm.runInContext(fs.readFileSync('ai-background.js','utf8'),context);
@@ -81,7 +81,7 @@ const event = data => ({httpMethod:'POST',body:JSON.stringify(data)});
  assert.equal(context.brandImageRecords[0].source,'ai-background');
  assert.equal(context.brandImageRecords[0].originalImage,image);
  assert.ok(context.brandImageRecords[0].id);assert.ok(context.brandImageRecords[0].createdAt);
- assert.match(el('backgroundStatus').textContent,/added to Brand Images/);
+ assert.match(el('backgroundStatus').textContent,/opgeslagen en toegepast/);
  pending=run('generateBackground()');await Promise.resolve();await Promise.resolve();
  assert.deepEqual(sources,[image,image]);
  resolveRequest({ok:false,json:async()=>({error:'Quota reached'})});await pending;
@@ -99,7 +99,7 @@ const event = data => ({httpMethod:'POST',body:JSON.stringify(data)});
  resolveRequest({ok:true,json:async()=>({image:'data:image/png;base64,ZGVm'})});await pending;
  run('restoreBackground()');await run('acceptBackground()');assert.equal(context.brandImageRecords.length,1,'Restored previews cannot be saved');
  pending=run('generateBackground()');await Promise.resolve();await Promise.resolve();
- resolveRequest({ok:true,json:async()=>({image:'data:image/png;base64,ZGVm'})});await pending;
+ resolveRequest({ok:true,json:async()=>({image:'data:image/png;base64,Z2hp'})});await pending;
  context.persistBrandImage=async()=>{throw new Error('QuotaExceededError');};
  await run('acceptBackground()');assert.equal(context.selectedImage,image);
  assert.equal(el('backgroundPreview').hidden,false);assert.equal(el('backgroundAccept').disabled,false);

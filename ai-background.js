@@ -5,6 +5,23 @@ let backgroundPreview = null;
 let backgroundRequest = null;
 let backgroundSaving = false;
 let backgroundPreviewMetadata = null;
+const backgroundFingerprints = new Set();
+const BACKGROUND_HISTORY_KEY = 'spectron-ai-background-fingerprints-v1';
+try { for(const hash of JSON.parse(localStorage.getItem(BACKGROUND_HISTORY_KEY)||'[]')) if(typeof hash==='string') backgroundFingerprints.add(hash); } catch {}
+function clearBackgroundPreview(){
+  backgroundRequest?.abort();
+  backgroundRequest=null;
+  backgroundPreview=null;
+  backgroundPreviewMetadata=null;
+  renderBackgroundControls();
+}
+async function backgroundFingerprint(image){
+  // Compare image bytes, independent of the MIME label.
+  const data=image.slice(image.indexOf(',')+1);
+  const bytes=Uint8Array.from(atob(data),c=>c.charCodeAt(0));
+  const hash=await crypto.subtle.digest('SHA-256',bytes);
+  return Array.from(new Uint8Array(hash),n=>n.toString(16).padStart(2,'0')).join('');
+}
 const backgroundElement = id => document.getElementById(id);
 function syncBackgroundImage() {
   if(selectedImage !== backgroundOriginal && (!backgroundAccepted || selectedImage !== backgroundAccepted)) {
@@ -58,10 +75,15 @@ async function generateBackground() {
   if(backgroundRequest || backgroundSaving) return;
   const error = backgroundElement('backgroundError');
   error.textContent = '';
+  backgroundPreview=null;
+  backgroundPreviewMetadata=null;
+  renderBackgroundControls();
   const description = backgroundElement('backgroundDescription').value.trim();
   if(!selectedImage || !backgroundOriginal) { error.textContent = 'Selecteer eerst een afbeelding.'; return; }
   if(!description || description.length > 1000) { error.textContent = 'Beschrijf de achtergrond (maximaal 1000 tekens).'; return; }
   const metadata = {brand:backgroundElement('brand').value, prompt:description, originalImage:backgroundOriginal, originalImageId:brandImageRecords.find(item => item.image === backgroundOriginal)?.id || null};
+  backgroundPreview=null;
+  backgroundPreviewMetadata=null;
   const request = new AbortController();
   backgroundRequest = request;
   const timer = setTimeout(() => request.abort(), 65000);
@@ -69,14 +91,33 @@ async function generateBackground() {
   try {
     const image = await backgroundImageData(backgroundOriginal, request.signal);
     if(request.signal.aborted) throw new Error('Genereren geannuleerd.');
-    const response = await fetch('/.netlify/functions/generate-ai-image', {
-      method:'POST', headers:{'Content-Type':'application/json'}, signal:request.signal,
-      body:JSON.stringify({image, description})
-    });
-    const result = await response.json();
-    if(!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Genereren is mislukt. Probeer opnieuw.');
-    if(!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(result.image || '')) throw new Error('Geen geldige afbeelding ontvangen. Probeer opnieuw.');
-    if(backgroundRequest === request) { backgroundPreview = result.image; backgroundPreviewMetadata = metadata; }
+    for(let attempt=0;attempt<2;attempt++) {
+      if(request.signal.aborted || backgroundRequest!==request) return;
+      const requestId=crypto.randomUUID();
+      const response = await fetch('/.netlify/functions/generate-ai-image?requestId='+encodeURIComponent(requestId), {
+        method:'POST', cache:'no-store', headers:{'Content-Type':'application/json'}, signal:request.signal,
+        body:JSON.stringify({image, description, requestId})
+      });
+      const result = await response.json();
+      if(!response.ok) throw new Error(typeof result.error === 'string' ? result.error : 'Genereren is mislukt. Probeer opnieuw.');
+      if(!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(result.image || '')) throw new Error('Geen geldige afbeelding ontvangen. Probeer opnieuw.');
+      if(request.signal.aborted || backgroundRequest!==request) return;
+      const fingerprint=await backgroundFingerprint(result.image);
+      // Include saved results from earlier browser sessions and reject an unchanged source.
+      const prior=[backgroundOriginal,...brandImageRecords.filter(item=>item.source==='ai-background').map(item=>item.image)];
+      const priorHashes=await Promise.all(prior.filter(src=>/^data:image\//.test(src)).map(backgroundFingerprint));
+      const duplicate=backgroundFingerprints.has(fingerprint)||priorHashes.includes(fingerprint);
+      if(request.signal.aborted || backgroundRequest!==request) return;
+      backgroundFingerprints.add(fingerprint);
+      try { localStorage.setItem(BACKGROUND_HISTORY_KEY,JSON.stringify([...backgroundFingerprints])); } catch { throw new Error('De nieuwe afbeelding kon niet veilig worden geregistreerd. Controleer browseropslag en probeer opnieuw.'); }
+      if(duplicate) {
+        if(attempt===0) continue;
+        throw new Error('Gemini gaf opnieuw een eerdere afbeelding terug. Er is geen nieuwe afbeelding gemaakt. Probeer een andere achtergrondbeschrijving.');
+      }
+      backgroundPreview=result.image;
+      backgroundPreviewMetadata=metadata;
+      break;
+    }
   } catch(e) {
     if(backgroundRequest === request) error.textContent = request.signal.aborted ? 'Genereren duurde te lang. Probeer opnieuw.' : e instanceof SyntaxError ? 'Ongeldig antwoord van de server. Probeer opnieuw.' : e.message;
   } finally {
@@ -85,7 +126,6 @@ async function generateBackground() {
   }
 }
 function applyBackgroundImage(src) {
-  if(!brandImageRecords.some(item => item.image === src) && !uploadedImages.includes(src)) uploadedImages.unshift(src);
   selectImage(src);
 }
 async function acceptBackground() {
@@ -110,7 +150,7 @@ async function acceptBackground() {
   } finally {
     backgroundSaving = false;
     renderBackgroundControls();
-    if(saved) backgroundElement('backgroundStatus').textContent = 'AI image added to Brand Images.';
+    if(saved) backgroundElement('backgroundStatus').textContent = 'Nieuwe AI-afbeelding opgeslagen en toegepast.';
   }
 }
 function restoreBackground() {

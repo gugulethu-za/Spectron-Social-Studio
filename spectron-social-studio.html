@@ -2126,8 +2126,9 @@ function renderImageGallery(){
   const gallery = document.getElementById('imgGallery');
   const defaults = brand ? (BRAND_IMAGES[brand] || []) : [];
   const brandUploads = brand ? (uploadedLibraryImages[brand] || []) : [];
-  const savedImages = brandImageRecords.filter(image => !image.brand || image.brand === brand);
-  const all = [...new Set([...savedImages.map(image => image.image), ...uploadedImages, ...brandUploads, ...defaults])];
+  const generatedImages = new Set(brandImageRecords.filter(image => image.source === 'ai-background').map(image => image.image));
+  const savedImages = brandImageRecords.filter(image => image.source !== 'ai-background' && (!image.brand || image.brand === brand));
+  const all = [...new Set([...savedImages.map(image => image.image), ...uploadedImages, ...brandUploads, ...defaults])].filter(src => !generatedImages.has(src));
 
   updateGalleryArrowVisibility(brand, all.length);
 
@@ -2138,7 +2139,7 @@ function renderImageGallery(){
     return;
   }
 
-  if(!selectedImage || !all.includes(selectedImage)){
+  if(!selectedImage || (!all.includes(selectedImage) && !generatedImages.has(selectedImage))){
     selectedImage = all[0];
   }
 
@@ -2163,6 +2164,7 @@ function scrollGallery(direction){
 
 function selectImage(src){
   selectedImage = src;
+  if(typeof clearBackgroundPreview === 'function') clearBackgroundPreview();
   renderImageGallery();
   document.querySelectorAll('.product-img').forEach(img => { img.src = src; });
   document.querySelectorAll('.card [style*="background-image"]').forEach(el => { el.style.backgroundImage = `url("${src}")`; });
@@ -2664,7 +2666,7 @@ showWorkflowChooser();
 </script>
 <script src="animated-video.js"></script>
 <script src="ai-video.js?v=portrait-preview-3"></script>
-<script src="ai-background.js"></script>
+<script src="ai-background.js?v=fresh-results-2"></script>
 <script src="studio-library.js"></script>
 
 <div id="aiVideoConfirmModal" class="ai-video-modal" hidden role="dialog" aria-modal="true" aria-labelledby="aiVideoConfirmTitle">
