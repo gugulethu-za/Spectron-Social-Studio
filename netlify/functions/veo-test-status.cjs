@@ -20,7 +20,7 @@ exports.handler = async function handler(event, context, feature='veo-test') {
     if (result.error || !extractVideoUri(result)) {
       const failure = failureDetails(result);
       console.warn('[veo] Operation failed', {operation, reason:failure.reason});
-      return reply(200,{state:'failed',operation,message:failure.message});
+      return reply(200,{state:'failed',operation,message:failure.message,category:failure.category});
     }
     return reply(200,{state:'completed',operation,videoReference:operation});
   } catch (error) { return reply(502,{error:error?.name === 'TimeoutError' ? 'The Google operation status request timed out.' : 'The Google operation status request failed.'}); }

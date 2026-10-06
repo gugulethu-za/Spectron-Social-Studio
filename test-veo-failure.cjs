@@ -17,11 +17,12 @@ test('production status, logs and usage preserve failure reasons with mocked net
   try {
     const handler = require(paths[1]).handler;
     const cases = [
-      [{done:true,response:{generateVideoResponse:{raiMediaFilteredCount:1,raiMediaFilteredReasons:['The uploaded image contains a child. Please use an image of an adult.']}}}, /contains a child/],
+      [{done:true,response:{generateVideoResponse:{raiMediaFilteredCount:1,raiMediaFilteredReasons:['The uploaded image contains a child. Please use an image of an adult.']}}}, /content filter/],
       [{done:true,error:{message:'The video could not be generated because the image is too small.'}}, /image is too small/],
       [{done:true,error:{message:'Please use an image of an adult. Internal URL https://private.test?key=mock-secret',details:{stack:'private stack'}}}, /image of an adult/],
       [{done:true}, /Google reported/],
       [{done:true,error:{message:'SAFETY_BLOCKED'}}, /safety checks/],
+      [{done:true,response:{generateVideoResponse:{raiMediaFilteredCount:1,raiMediaFilteredReasons:['Guardrails related to third-party content.']}}}, /third-party artwork/],
     ];
     for (const [body, expected] of cases) {
       payload = body;
@@ -41,7 +42,8 @@ test('production status, logs and usage preserve failure reasons with mocked net
     payload={done:false};assert.equal(JSON.parse((await handler({httpMethod:'GET',queryStringParameters:{operation:'operations/mock'}})).body).state,'pending');
     payload={done:true,response:{generatedVideos:[{video:{uri:'mock-video'}}]}};
     assert.equal(JSON.parse((await handler({httpMethod:'GET',queryStringParameters:{operation:'operations/mock'}})).body).state,'completed');
-    assert.equal(calls,7);
+    assert.equal(calls,8);
+    assert.match(records[11].failureReason,/third-party content/);
   } finally {
     usage.trackedFetch=original;console.warn=originalWarn;paths.forEach(p=>delete require.cache[p]);
     if(originalKey===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=originalKey;
@@ -59,4 +61,30 @@ test('page displays the status reason, retains the paid retry warning and does n
   assert.match(elements.resultsArea.innerHTML,/image of an adult/);
   assert.match(elements.resultsArea.innerHTML,/Starting again may create another paid video/);
   assert.equal(calls,1);
+});
+
+test('third-party guardrails produce a content-filter message and no one-click retry', async()=>{
+  const {failureDetails}=require('./netlify/lib/veo-failure.cjs');
+  for(const response of [
+    {generateVideoResponse:{raiMediaFilteredCount:1,raiMediaFilteredReasons:['Your request was blocked by guardrails related to third-party content.']}},
+    {raiMediaFilteredCount:1,raiMediaFilteredReasons:['Your request was blocked by guardrails related to third-party content.']},
+    {generateVideoResponse:{raiMediaFilteredCount:1}},
+  ]) {
+    const failure=failureDetails({done:true,response});
+    assert.equal(failure.category,'content-filter');
+    assert.match(failure.message,/other brands' logos or licensed characters/);
+    assert.match(failure.message,/different product photo without third-party artwork/);
+    const elements={resultsArea:{},outputMeta:{},generateAIVideoBtn:{setAttribute(){}}};let calls=0;
+    const ctx=vm.createContext({window:{addEventListener(){}},document:{getElementById:id=>elements[id]},
+      setAdGenerationState(){},escapeHtml:s=>s,clearTimeout(){},Date,console,
+      fetch:async()=>{calls++;return new Response(JSON.stringify({state:'failed',message:failure.message,category:failure.category}),{headers:{'Content-Type':'application/json'}});}});
+    vm.runInContext(fs.readFileSync('ai-video.js','utf8'),ctx);
+    vm.runInContext('aiVideoRunning=true;aiVideoPollStarted=Date.now()',ctx);
+    await ctx.pollAIVideo('operations/mock');
+    assert.match(elements.resultsArea.innerHTML,/content filter/);
+    assert.doesNotMatch(elements.resultsArea.innerHTML,/<button|generateAIVideo|Google safety checks or Veo generation failed/);
+    assert.match(elements.resultsArea.innerHTML,/Starting again may create another paid video/);
+    assert.equal(calls,1);
+  }
+  assert.match(fs.readFileSync('spectron-social-studio.html','utf8'),/ai-video\.js\?v=content-filter-2/);
 });

@@ -28,9 +28,10 @@ function failureDetails(result) {
     .filter(text => !/\b[A-Z][A-Z_]+\b/.test(text))
     .map(text => text.trim()).filter(Boolean).join(' ').slice(0, 600);
   const safety = /safety|blocked|unsafe|policy|filtered/i.test(messages.join(' ')) || generated.raiMediaFilteredCount > 0;
-  const message = safe ? `${safety ? 'Google safety checks blocked this video request.' : FALLBACK} ${safe}`
+  const contentFiltered = (generated.raiMediaFilteredCount ?? response.raiMediaFilteredCount ?? 0) > 0 || (Array.isArray(reasons) ? reasons.length > 0 : Boolean(reasons)) || /guardrails|third[- ]party content|content filter/i.test(messages.join(' '));
+  const message = contentFiltered ? "This image or prompt was blocked by Google's content filter (for example, other brands' logos or licensed characters). Try a different product photo without third-party artwork." : safe ? `${safety ? 'Google safety checks blocked this video request.' : FALLBACK} ${safe}`
     : safety ? 'Google safety checks blocked this video request.' : FALLBACK;
-  return {reason, message};
+  return {reason, message, category:contentFiltered ? 'content-filter' : 'generation-failed'};
 }
 
 module.exports = {failureDetails};
