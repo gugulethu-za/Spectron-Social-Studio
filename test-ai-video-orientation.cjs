@@ -12,12 +12,13 @@ for(const ratio of ['9:16','16:9']) test(`${ratio}: selector, crop, start payloa
  const originalKey=process.env.GEMINI_API_KEY;
  const startPath=require.resolve('./netlify/functions/start-veo-test.cjs');
  const wrapperPath=require.resolve('./netlify/functions/start-veo-video.cjs');
+ const servicePath=require.resolve('./netlify/lib/omni-video.cjs');
  // Inject an in-memory tracker and fetcher. No provider or storage network calls.
  usage.trackedFetch=usage.createTracker({storeFactory:()=>({async setJSON(key,value){records.push(value);}}),fetcher:async(url,options)=>{
    requests.push(JSON.parse(options.body));
-   return new Response(JSON.stringify({name:'operations/mock-video'}),{status:200});
+   return new Response(JSON.stringify({id:'mock-video',status:'in_progress'}),{status:200});
  }}).trackedFetch;
- delete require.cache[startPath];delete require.cache[wrapperPath];
+ delete require.cache[startPath];delete require.cache[wrapperPath];delete require.cache[servicePath];
  process.env.GEMINI_API_KEY='mock-only-key';
  try{
   const start=require(wrapperPath).handler;
@@ -43,20 +44,20 @@ for(const ratio of ['9:16','16:9']) test(`${ratio}: selector, crop, start payloa
   await ctx.generateAIVideo();assert.equal(startCalls,0,'confirmation and duplicate click cannot start a request');
   els.aiVideoConfirmButton.onclick();await generating;
   await ctx.generateAIVideo();assert.equal(startCalls,1,'duplicate click during polling is ignored');
-  assert.equal(requests[0].parameters.aspectRatio,ratio);
-  assert.equal(requests[0].instances[0].prompt,'Product showcase','Veo receives only the video textbox, without appended brand or product fields');
-  assert.equal(requests[0].instances[0].image.mimeType,'image/png');
+  assert.equal(requests[0].response_format.aspect_ratio,ratio);
+  assert.equal(requests[0].input[1].text,'Product showcase','Omni receives only the video textbox, without appended brand or product fields');
+  assert.equal(requests[0].input[0].mime_type,'image/png');
   if(ratio==='9:16'){assert.ok(Math.abs(canvas.width/canvas.height-9/16)<.002);assert.ok(draw[1]>0,'center crop without padding');}
   assert.equal(records.length,2);for(const record of records)assert.equal(record.aspectRatio,ratio);
   const summary=usage.summarize(records);assert.equal(summary.recent[0].aspectRatio,ratio);assert.equal(summary.totals.veo.attempts,1);
   ctx.selectAIVideoFormat(ratio==='9:16'?'16:9':'9:16');
-  await ctx.pollAIVideo('operations/mock-video');
+  await ctx.pollAIVideo('interactions/mock-video');
   assert.equal(els.aiVideoPreview.dataset.previewRatio,ratio==='9:16'?'portrait':'landscape');
   assert.match(els.resultsArea.innerHTML,new RegExp(`ai-video-frame-${ratio==='9:16'?'portrait':'landscape'}`));
   assert.equal(els.aiVideoPreview.controls,true);
   assert.equal(els.aiVideoPreview.src,'blob:mock');
-  assert.match(els.resultsArea.innerHTML,/href="\/\.netlify\/functions\/download-veo-video\?operation=operations%2Fmock-video"/);
- }finally{usage.trackedFetch=originalTracked;delete require.cache[startPath];delete require.cache[wrapperPath];if(originalKey===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=originalKey;}
+  assert.match(els.resultsArea.innerHTML,/href="\/\.netlify\/functions\/download-veo-video\?operation=interactions%2Fmock-video"/);
+ }finally{usage.trackedFetch=originalTracked;delete require.cache[startPath];delete require.cache[wrapperPath];delete require.cache[servicePath];if(originalKey===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=originalKey;}
 });
 
 for(const mobile of [false,true]) test(`portrait fits ${mobile?'mobile viewport':'desktop canvas'} and resizes`,()=>{

@@ -192,7 +192,7 @@ Run `netlify dev --offline --port 8888` to use local functions and local Blobs. 
 ### Meaning of the totals
 
 - Gemini: outbound requests, successful/failed/unknown responses, and provider-reported input/output/total tokens. Thinking and cache counts are shown separately but never added again to the reported total. Missing metadata is unknown, not zero. Image generation uses the same `usageMetadata` parser, including modality breakdowns when present.
-- Veo: starts, accepted operations, completed/failed/pending/unknown generations, returned videos, requested seconds and estimated output seconds. Credits and billed costs are not supplied by the current `predictLongRunning` response and are not invented. Estimated output seconds equal requested duration times the returned video count for completed operations.
+- Veo: starts, accepted operations, completed/failed/pending/unknown generations, returned videos, requested seconds and estimated output seconds. Credits and billed costs are not supplied by the video responses and are not invented. Historical Veo operations and new Gemini Omni interactions share the existing video totals. Estimated output seconds equal requested duration times the returned video count for completed operations.
 - Status checks, downloads and model-access diagnostics are recorded as calls, not generations. The operation name joins start and status records, so repeated polls/downloads do not increase completed-generation counts. Production AI Video and the Veo test page have separate feature labels.
 - A batch of four ad variants is one API generation request. Local fallback copy and browser-rendered video are not API generations. A Gemini error followed by local fallback remains a recorded failed/unknown Gemini attempt.
 - Dates use Africa/Johannesburg; weeks start Monday. A generation is assigned to its request date, even if its final Veo status arrives later. All-time means since the first retained record; external apps and earlier usage cannot be reconstructed.
@@ -212,3 +212,68 @@ Only allowlisted metadata is stored: timestamps, feature/model, counts, status a
 ### Verification
 
 `npm run test:usage` covers response preservation, token parsing, 30 concurrent requests, storage retries/timeouts, network errors, Veo deduplication, time zones, pagination, password enforcement and the actual Netlify Blobs SDK with a local disk-backed store. All Google calls in that integration test are mocked. Existing `test-*.cjs` scripts cover the studio's other behaviour. No paid API call is needed to run the tests.
+
+## AI Video: Gemini Omni migration
+
+Video generation now uses `gemini-omni-1.1-flash`, replacing the retired
+`veo-3.1-fast-generate-preview`. The existing `*-veo-*` function URLs are retained
+for compatibility, including the test page. Historical Veo operation status and
+download requests are still supported.
+
+The server uses the Gemini Interactions REST API (revision `2026-05-20`):
+
+1. `start-veo-video` makes one `POST /v1beta/interactions` with `background: true`,
+   the selected image and prompt, and a video response format (4 seconds, 720p,
+   selected aspect ratio). It returns HTTP 202 with `interactions/<id>` without
+   waiting for generation or retrying the paid request.
+2. The browser polls `veo-video-status` every 10 seconds, up to seven minutes.
+   The function reads `GET /v1beta/interactions/<id>` and returns only pending,
+   failed, or completed state—not prompts, credentials, media URLs or video data.
+3. `download-veo-video` retrieves the completed MP4 separately. REST video output
+   is read from `steps[].content[]`, not the SDK-only `output_video` field.
+   Google currently returns inline base64 on interaction GET, even when URI
+   delivery was requested. Both inline and Google Files URI downloads are handled.
+   Binary output is capped at 4 MiB to fit Netlify's buffered response limit;
+   larger videos receive a friendly error rather than an oversized function response.
+
+Video functions read `GOOGLE_DEVELOPER_API_KEY`, falling back to the existing
+`GEMINI_API_KEY`, exclusively from server environment variables. Set these in
+Netlify's Functions environment; never put them in HTML or client JavaScript.
+Quota errors return HTTP 429 and **Google usage limit reached**. Provider error
+bodies are not exposed or logged by the new video path. Confirmation is still
+required before every paid start; polling and downloading never start another job.
+
+Background execution requires Google-side interaction storage (`store: true`).
+Google's retention rules apply to uploaded media, prompts and generated output;
+this is separate from Spectron's metadata-only usage store. See the current
+[Omni guide](https://ai.google.dev/gemini-api/docs/omni),
+[background execution guide](https://ai.google.dev/gemini-api/docs/background-execution),
+[Interactions reference](https://ai.google.dev/api/interactions-api), and
+[retention documentation](https://ai.google.dev/gemini-api/docs/interactions-overview#data-storage).
+
+### Safe local regression tests
+
+```powershell
+node test-inline-handlers.cjs
+node test-workflow-navigation.cjs
+node test-veo-poc.cjs
+node test-ai-video-orientation.cjs
+npm run test:usage
+node test-netlify-video.cjs
+```
+
+`test-netlify-video.cjs` starts and stops `netlify dev --offline --port 8899`,
+checks the served HTML and every script URL, and exercises start/status/download,
+quota, permission, filtering and pending responses. Keep port 8899 free. On
+Windows it uses the global Netlify CLI installed under `%APPDATA%/npm`; other
+platforms use `netlify` from PATH. Its test-only `mock-video-network.cjs` preload
+blocks external requests except explicit Google mocks, and it supplies a dummy
+key. It never generates paid video. Do not use that preload for normal app use.
+
+The local workflow functions are normal global declarations in
+`spectron-social-studio.html`, not module exports. The inline-handler test loads
+all app scripts and verifies every inline `onclick` function resolves, then
+exercises both workflow buttons. If the live site reports a missing
+`showStudioWorkflow`, compare its deploy commit and HTML with the checkout,
+redeploy the intended commit, and hard-refresh. This checkout is not linked to a
+Netlify site, so a live URL/deploy SHA is needed to verify the deployed version.

@@ -1,16 +1,57 @@
-const { trackedFetch } = require('../lib/usage.cjs');
-'use strict';
-const MODEL='veo-3.1-fast-generate-preview';
-const MAX_IMAGE_BYTES=20*1024*1024;
-const IMAGE_PATTERN=/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/]+={0,2})$/;
-const OPERATION_PATTERN=/^(?:operations\/[A-Za-z0-9._-]+|models\/[A-Za-z0-9._-]+\/operations\/[A-Za-z0-9._-]+)$/;
-function reply(statusCode,body){return {statusCode,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)};}
-function isLocal(){return process.env.NETLIFY_DEV==='true'||process.env.CONTEXT==='dev'||process.env.NODE_ENV==='development';}
-function sanitize(value){let s=typeof value==='string'?value:'';s=s.replace(/data:image\/[^;]+;base64,[A-Za-z0-9+/=]+/gi,'[redacted-image-data]').replace(/AIza[0-9A-Za-z_-]+/g,'[redacted-api-key]').replace(/(?:x-goog-api-key|api[-_ ]?key|key)\s*[:=]\s*["']?[^\s,"'}]+/gi,'[redacted-credential]');s=s.replace(/https?:\/\/[^\s"'<>]+/gi,u=>{try{const x=new URL(u);x.search='';x.hash='';return x.toString();}catch{return '[redacted-url]';}});s=s.replace(/[A-Za-z0-9+/]{80,}={0,2}/g,'[redacted-data]');return s.slice(0,500).trim();}
-function parseImage(value){if(typeof value!=='string')return null;const m=value.match(IMAGE_PATTERN);if(!m||m[2].length%4===1)return null;const bytes=Buffer.from(m[2],'base64');if(!bytes.length||bytes.length>MAX_IMAGE_BYTES||bytes.toString('base64')!==m[2])return null;return {mimeType:m[1],data:m[2]};}
-function classify(status,message){const h=sanitize(message).toLowerCase();if(/safety|blocked|unsafe|policy/.test(h))return ['safety-blocked','Google safety checks blocked this video request.'];if(status===400)return ['invalid-request','Google rejected the video request.'];if(status===401)return ['authentication','The configured Gemini API key is invalid.'];if(status===403)return ['permission-denied','The configured Gemini API key is not permitted to generate Veo videos.'];if(status===404)return ['not-found','The requested Veo model or endpoint was not found.'];if(status===429)return ['quota','The Gemini billing or quota limit was reached.'];return ['google-error','Google Veo could not start the video request.'];}
-function googleFailure(httpStatus,result){const raw=result&&result.error||{};const googleMessage=sanitize(raw.message)||'Google returned no error message.';const [category,fallback]=classify(httpStatus,googleMessage);const googleCode=typeof raw.status==='string'?sanitize(raw.status):Number.isInteger(raw.code)?String(raw.code):`HTTP_${httpStatus}`;if(isLocal())console.warn('[veo-test] Google request failed',{status:httpStatus,code:googleCode,message:googleMessage});const body={error:fallback,category};if(isLocal())Object.assign(body,{googleStatus:httpStatus,googleCode,googleMessage});return reply(httpStatus===429?429:502,body);}
-exports.handler=async function(event, context, feature='veo-test'){if(event.httpMethod!=='POST')return reply(405,{error:'Method not allowed.'});const apiKey=process.env.GEMINI_API_KEY;if(!apiKey)return reply(500,{error:'GEMINI_API_KEY is not configured on the server.',category:'configuration'});let input;try{input=JSON.parse(event.body||'{}');}catch{return reply(400,{error:'Request body must be valid JSON.',category:'invalid-input'});}if(!input||typeof input!=='object'||Array.isArray(input))return reply(400,{error:'Request body must be a JSON object.',category:'invalid-input'});const image=parseImage(input.image);const prompt=typeof input.prompt==='string'?input.prompt.trim():'';const aspectRatio=input.aspectRatio;if(!image)return reply(400,{error:'Upload a non-empty JPEG, PNG or WebP image no larger than 20 MB.',category:'invalid-input'});if(!prompt||prompt.length>4000)return reply(400,{error:'Enter a prompt between 1 and 4000 characters.',category:'invalid-input'});if(aspectRatio!=='16:9'&&aspectRatio!=='9:16')return reply(400,{error:'Aspect ratio must be 16:9 or 9:16.',category:'invalid-input'});try{const response=await trackedFetch(event, {provider:'veo', feature, requestType:'generate', model:MODEL, durationSeconds:4, requestedSeconds:4, resolution:'720p', aspectRatio}, `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:predictLongRunning`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':apiKey},signal:AbortSignal.timeout(30000),body:JSON.stringify({instances:[{prompt,image:{bytesBase64Encoded:image.data,mimeType:image.mimeType}}],parameters:{aspectRatio,sampleCount:1,durationSeconds:4,resolution:'720p'}})});let result=null;try{result=await response.json();}catch{}if(!response.ok)return googleFailure(response.status,result);if(!result||typeof result.name!=='string'||!OPERATION_PATTERN.test(result.name))return reply(502,{error:'Google returned an invalid video operation.',category:'invalid-response'});return reply(202,{success:true,operation:result.name});}catch(error){if(isLocal())console.warn('[veo-test] Google request failed',{status:0,code:'NETWORK_ERROR',message:error&&error.name==='TimeoutError'?'timeout':'network failure'});return reply(502,{error:error&&error.name==='TimeoutError'?'The Google Veo request timed out.':'The Google Veo request failed.',category:error&&error.name==='TimeoutError'?'timeout':'network-error'});}};
-exports._test={parseImage,sanitize,googleFailure};
+/** @typedef {{image:{mimeType:string, data:string}, prompt:string, aspectRatio:string}} VideoInput */
+const { apiKey, reply, requestJSON, networkFailure } = require('../lib/omni-video.cjs');
+const { INTERACTION_ID_PATTERN } = require('../lib/video-response.cjs');
+const MODEL = 'gemini-omni-1.1-flash';
+const DURATION_SECONDS = 4;
+const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
+const IMAGE_PATTERN = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/]+={0,2})$/;
 
-
+/** @param {unknown} value @returns {{mimeType:string, data:string} | null} */
+function parseImage(value) {
+  if (typeof value !== 'string') return null;
+  const match = value.match(IMAGE_PATTERN);
+  if (!match || match[2].length % 4 === 1) return null;
+  const bytes = Buffer.from(match[2], 'base64');
+  if (!bytes.length || bytes.length > MAX_IMAGE_BYTES || bytes.toString('base64') !== match[2]) return null;
+  return {mimeType:match[1], data:match[2]};
+}
+/** @param {string | undefined} body @returns {VideoInput | {error:string}} */
+function validateInput(body) {
+  let input;
+  try { input = JSON.parse(body || '{}'); }
+  catch { return {error:'Request body must be valid JSON.'}; }
+  const image = parseImage(input?.image);
+  const prompt = typeof input?.prompt === 'string' ? input.prompt.trim() : '';
+  if (!image) return {error:'Upload a non-empty JPEG, PNG or WebP image no larger than 20 MB.'};
+  if (!prompt || prompt.length > 4000) return {error:'Enter a prompt between 1 and 4000 characters.'};
+  if (!['16:9', '9:16'].includes(input.aspectRatio)) return {error:'Aspect ratio must be 16:9 or 9:16.'};
+  return {image, prompt, aspectRatio:input.aspectRatio};
+}
+/** @param {VideoInput} input */
+function generationRequest({image, prompt, aspectRatio}) {
+  return {
+    model:MODEL, background:true, store:true,
+    input:[{type:'image', data:image.data, mime_type:image.mimeType}, {type:'text', text:prompt}],
+    generation_config:{video_config:{task:'image_to_video'}},
+    response_format:{type:'video', aspect_ratio:aspectRatio, duration:`${DURATION_SECONDS}s`, resolution:'720p', delivery:'uri'}
+  };
+}
+/** @param {import('../lib/omni-video.cjs').VideoEvent} event @param {unknown} context @param {string} feature */
+exports.handler = async function handler(event, context, feature = 'veo-test') {
+  if (event.httpMethod !== 'POST') return reply(405, {error:'Method not allowed.'});
+  if (!apiKey()) return reply(500, {error:'The Google video API key is not configured on the server.', category:'configuration'});
+  const input = validateInput(event.body);
+  if (input.error) return reply(400, {error:input.error, category:'invalid-input'});
+  try {
+    const details = {feature, requestType:'generate', model:MODEL, durationSeconds:DURATION_SECONDS,
+      requestedSeconds:DURATION_SECONDS, resolution:'720p', aspectRatio:input.aspectRatio};
+    const {data, failure} = await requestJSON(event, details, 'interactions', {
+      method:'POST', body:JSON.stringify(generationRequest(input))
+    });
+    if (failure) return failure;
+    if (typeof data?.id !== 'string' || !INTERACTION_ID_PATTERN.test(data.id)) {
+      return reply(502, {error:'Google returned an invalid video operation.', category:'invalid-response'});
+    }
+    return reply(202, {success:true, operation:`interactions/${data.id}`});
+  } catch (error) { return networkFailure(error); }
+};

@@ -1,5 +1,6 @@
 const { trackedFetch } = require('../lib/usage.cjs');
 const { failureDetails } = require('../lib/veo-failure.cjs');
+const omniVideo = require('../lib/omni-video.cjs');
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 const OPERATION_PATTERN = /^(?:operations\/[A-Za-z0-9._-]+|models\/[A-Za-z0-9._-]+\/operations\/[A-Za-z0-9._-]+)$/;
 function reply(statusCode, body) { return {statusCode, headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)}; }
@@ -8,8 +9,9 @@ exports.OPERATION_PATTERN = OPERATION_PATTERN; exports.extractVideoUri = extract
 exports.handler = async function handler(event, context, feature='veo-test') {
   if (event.httpMethod !== 'GET') return reply(405,{error:'Method not allowed.'});
   const operation = event.queryStringParameters?.operation || '';
+  if (operation.startsWith('interactions/')) return omniVideo.status(event, feature);
   if (!OPERATION_PATTERN.test(operation)) return reply(400,{error:'Invalid video operation name.'});
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = omniVideo.apiKey();
   if (!apiKey) return reply(500,{error:'GEMINI_API_KEY is not configured on the server.'});
   try {
     const response = await trackedFetch(event, {provider:'veo', feature, requestType:'status', operation}, `${API_BASE}/${operation}`,{headers:{'x-goog-api-key':apiKey},signal:AbortSignal.timeout(20000)});

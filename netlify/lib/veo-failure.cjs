@@ -3,7 +3,7 @@ const FALLBACK = 'Google reported that the video request failed.';
 // Diagnostics retain the provider's reason, but never credentials.
 function redact(value) {
   let text = String(value);
-  for (const key of [process.env.GEMINI_API_KEY, process.env.GOOGLE_API_KEY]) {
+  for (const key of [process.env.GEMINI_API_KEY, process.env.GOOGLE_API_KEY, process.env.GOOGLE_DEVELOPER_API_KEY]) {
     if (key) text = text.split(key).join('[redacted]');
   }
   return text.replace(/AIza[\w-]+/g, '[redacted]')

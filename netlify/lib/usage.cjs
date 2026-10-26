@@ -1,4 +1,5 @@
 const { failureDetails } = require('./veo-failure.cjs');
+const { INTERACTION_PATTERN, INTERACTION_ID_PATTERN, interactionState } = require('./video-response.cjs');
 const { randomUUID } = require('node:crypto');
 const { getStore, connectLambda } = require('@netlify/blobs');
 const STORE = 'spectron-ai-usage';
@@ -41,12 +42,16 @@ function responseDetails(base, response, data) {
     if (response.ok && !(Array.isArray(data?.candidates) && data.candidates.some(c => c?.content?.parts?.length))) result.outcome = 'unknown';
   }
   if (base.provider === 'veo' && base.requestType === 'generate') {
-    const operation = data?.name;
-    if (response.ok && typeof operation === 'string' && /^(?:operations\/[\w.-]+|models\/[\w.-]+\/operations\/[\w.-]+)$/.test(operation)) {
+    const operation = typeof data?.id === 'string' && INTERACTION_ID_PATTERN.test(data.id)
+      ? `interactions/${data.id}` : data?.name;
+    if (response.ok && typeof operation === 'string' && (INTERACTION_PATTERN.test(operation) || /^(?:operations\/[\w.-]+|models\/[\w.-]+\/operations\/[\w.-]+)$/.test(operation))) {
       result.operation = operation; result.outcome = 'submitted';
     } else if (response.ok) result.outcome = 'unknown';
   }
-  if (base.requestType === 'status' && response.ok) {
+  if (base.requestType === 'status' && response.ok && INTERACTION_PATTERN.test(base.operation || '')) {
+    result.operationState = interactionState(data);
+    result.videoCount = result.operationState === 'completed' ? 1 : 0;
+  } else if (base.requestType === 'status' && response.ok) {
     const samples = data?.response?.generateVideoResponse?.generatedSamples || data?.response?.generatedVideos;
     result.videoCount = Array.isArray(samples) ? samples.filter(s => s?.video?.uri).length : 0;
     result.operationState = data?.done === true ? (data.error || !result.videoCount ? 'failed' : 'completed') : data?.done === false || (data && data.done === undefined) ? 'pending' : 'unknown';

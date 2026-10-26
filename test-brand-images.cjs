@@ -60,10 +60,11 @@ function session(){
  context.record={id:require('node:crypto').randomUUID(),brand:'Bluey',image,source:'ai-background',prompt:'Snow',createdAt:new Date().toISOString(),originalImage:'original.png',originalImageId:null};
  await run('Promise.all([persistBrandImage(record),persistBrandImage({...record,id:crypto.randomUUID()})])');
  assert.equal(stores.get('brandImages').size,1);assert.equal(context.brandImageRecords.length,1);
- run('selectImage(record.image)');assert.equal(context.selectedImage,image);arrowsHidden(false);
- assert.match(el('imgGallery').innerHTML,/ai-image-badge/);assert.ok(el('imgGallery').innerHTML.includes(image));
+ run('selectImage(record.image)');assert.equal(context.selectedImage,image);arrowsHidden(true);
+ // The latest picker excludes saved AI images, but their stored records remain usable by ads.
+ assert.doesNotMatch(el('imgGallery').innerHTML,/ai-image-badge/);assert.ok(!el('imgGallery').innerHTML.includes(image));
  ({context,run,el}=session());await run('refreshBrandImages()');
- assert.equal(context.brandImageRecords.length,1);assert.equal(context.brandImageRecords[0].prompt,'Snow');arrowsHidden(false);
+ assert.equal(context.brandImageRecords.length,1);assert.equal(context.brandImageRecords[0].prompt,'Snow');arrowsHidden(true);
  run('selectImage(brandImageRecords[0].image)');assert.equal(context.selectedImage,image);
  for(const source of [image,'uploaded.png','spectron-logo.webp',null]){
  context.selectedImage=source;
@@ -83,5 +84,5 @@ function session(){
  await assert.rejects(run('persistBrandImage(record)'));
  assert.equal(stores.get('brandImages').size,1);assert.equal(context.brandImageRecords.length,1);
  console.log('PASS: gallery arrows on initial load, empty/single/multiple images, brand switch/reset, uploads, accepted AI image, refresh, unchanged scrolling');
- console.log('PASS: database upgrade, committed saves, transactional deduplication, refresh persistence, AI thumbnail, brand scope, selection, all ad renderers, saved ad image, storage failure');
+ console.log('PASS: database upgrade, committed saves, transactional deduplication, refresh persistence, saved-AI picker exclusion, brand scope, selection, all ad renderers, saved ad image, storage failure');
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -109,9 +109,9 @@ test('real Netlify Blobs SDK: legacy event, persistent disk store, new client, a
   global.fetch=async(url,options)=>{
    const u=String(url);if(u.startsWith(`http://localhost:${address.port}/`))return realFetch(url,options);
    assert.match(u,/^https:\/\/generativelanguage\.googleapis\.com\//,'All other networking blocked');apiCalls++;
-   if(u.includes('predictLongRunning'))return json({name:'operations/test-video'});
-   if(u.includes('operations/test-video'))return json({done:true,response:{generateVideoResponse:{generatedSamples:[{video:{uri:'https://generativelanguage.googleapis.com/v1beta/files/mock'}}]}}});
-   if(u.includes('/files/mock'))return new Response('fake mp4',{headers:{'Content-Type':'video/mp4'}});
+   if(u.endsWith('/interactions'))return json({id:'test-video',status:'in_progress'});
+   if(u.includes('interactions/test-video'))return json({status:'completed',steps:[{type:'model_output',content:[{type:'video',mime_type:'video/mp4',uri:'files/mock:download'}]}]});
+   if(u.includes('/files/mock:download'))return new Response('fake mp4',{headers:{'Content-Type':'video/mp4'}});
    if(u.includes('flash-image'))return json({...data,candidates:[{content:{parts:[{inlineData:{mimeType:'image/png',data:'YWJj'}}]}}]});
    return json(data);
   };
@@ -121,7 +121,7 @@ test('real Netlify Blobs SDK: legacy event, persistent disk store, new client, a
   assert.equal((await require('./netlify/functions/generate-ai-image.cjs').handler({...event,body:imageBody})).statusCode,200);
   const videoEvent={...event,body:JSON.stringify({image:'data:image/png;base64,YWJj',prompt:'test',aspectRatio:'9:16'})};
   assert.equal((await require('./netlify/functions/start-veo-video.cjs').handler(videoEvent)).statusCode,202);
-  const statusEvent={...event,httpMethod:'GET',queryStringParameters:{operation:'operations/test-video'}};
+  const statusEvent={...event,httpMethod:'GET',queryStringParameters:{operation:'interactions/test-video'}};
   for(let i=0;i<2;i++)assert.equal((await require('./netlify/functions/veo-video-status.cjs').handler(statusEvent)).statusCode,200);
   assert.equal((await require('./netlify/functions/download-veo-video.cjs').handler(statusEvent)).statusCode,200);
   const summary=await readSummary(event);assert.equal(summary.totals.gemini.attempts,2);assert.equal(summary.totals.gemini.totalTokens,70);
