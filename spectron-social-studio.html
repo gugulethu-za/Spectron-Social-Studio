@@ -1196,6 +1196,10 @@ button:disabled{opacity:.5;cursor:not-allowed;}
   .video-format-choice input:focus-visible+span{outline:3px solid #fff;outline-offset:2px;}
   .workspace-canvas{position:relative;min-width:0;min-height:calc(100vh - 220px);background:#d1d1d1;overflow:hidden;}
   .workspace-placeholder{position:absolute;inset:0;display:grid;place-items:center;color:#34377a;font-size:30px;font-weight:400;}
+  .workspace-placeholder[hidden],.workspace-image-preview[hidden]{display:none!important;}
+  .workspace-image-preview{position:absolute;inset:0;display:grid;place-items:center;padding:24px;}
+  .workspace-image-preview img{display:block;width:100%;height:100%;min-height:0;max-height:100%;object-fit:contain;object-position:center;}
+  @media(max-width:600px){.workspace-image-preview{padding:16px;}}
   .output#workspaceOutput{position:relative;z-index:1;width:100%;min-width:0;min-height:100%;padding:20px;background:transparent;}
   .output#workspaceOutput[hidden]{display:none!important;}
   .output-head{flex-wrap:wrap;}
@@ -1216,7 +1220,7 @@ button:disabled{opacity:.5;cursor:not-allowed;}
   .footer-note span:last-child{max-width:70%;text-align:right;}
   @media(max-width:1024px){.studio-shell{grid-template-columns:minmax(260px,300px) minmax(0,1fr);gap:16px;}.output#workspaceOutput{padding:14px;}}
   @media(max-width:1120px) and (min-width:861px){.brandmark h1{font-size:clamp(56px,7vw,78px);letter-spacing:-2px;}}
-  @media(max-width:860px){.wrap{padding:12px 16px 10px;gap:12px;}.masthead{min-height:86px;padding:8px 12px 10px;}.brandmark{align-items:center;gap:12px;}.brandmark h1{font-size:clamp(34px,7vw,54px);font-weight:600;letter-spacing:-2px;}.studio-shell{grid-template-columns:minmax(0,1fr);gap:14px;}.workflow-panel{position:static;top:auto;max-height:none;overflow:visible;}.workspace-canvas{min-height:420px;}.footer-note span:last-child{max-width:none;text-align:left;}}
+  @media(max-width:860px){.wrap{padding:12px 16px 10px;gap:12px;}.masthead{min-height:86px;padding:8px 12px 10px;}.brandmark{align-items:center;gap:12px;}.brandmark h1{font-size:clamp(34px,7vw,54px);font-weight:600;letter-spacing:-2px;}.studio-shell{gap:14px;}.workflow-panel{position:static;top:auto;max-height:none;overflow:visible;}.workspace-canvas{min-height:420px;}.footer-note span:last-child{max-width:none;text-align:left;}}
   @media(max-width:480px){.wrap{padding:8px 10px 10px;gap:10px;}.masthead{min-height:66px;padding:8px;}.brandmark{gap:8px;align-items:center;}.brandmark .spectron-logo{width:clamp(70px,24vw,110px);}.brandmark .divider{min-height:42px;}.brandmark h1{font-size:clamp(27px,9vw,42px);font-weight:600;letter-spacing:-1.5px;}.workflow-panel .panel-head{padding:9px 11px;}.workflow-chooser{gap:10px;padding:12px;}.workflow-choice{min-height:58px;font-size:15px;}.workspace-canvas{min-height:360px;}.output#workspaceOutput{padding:10px;}.video-format-choices{gap:8px;}.footer-note{font-size:10px;}}
   @media(max-width:340px){.brandmark{gap:6px;}.brandmark .spectron-logo{width:68px;}.brandmark h1{font-size:26px;letter-spacing:-1.4px;}}
 
@@ -1311,6 +1315,8 @@ button:disabled{opacity:.5;cursor:not-allowed;}
     .workflow-panel::-webkit-scrollbar-track{background:transparent;}
     .workflow-panel::-webkit-scrollbar-thumb{border-radius:8px;background:rgba(52,55,122,.28);}
     .workspace-canvas{display:flex;flex-direction:column;width:100%;height:100%;min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;scrollbar-gutter:auto;}
+    .studio-shell>.workflow-panel{grid-column:1;grid-row:1;}
+    .studio-shell>.workspace-canvas{grid-column:2;grid-row:1;}
     .workspace-placeholder{position:absolute;}
     .output#workspaceOutput{flex:1 0 auto;min-height:100%;}
     .footer-note{flex:none;width:100%;margin-top:auto;}
@@ -1322,6 +1328,7 @@ button:disabled{opacity:.5;cursor:not-allowed;}
     .studio-shell{display:grid;grid-row:auto;grid-template-columns:minmax(0,1fr);width:100%;height:auto;min-height:0;overflow:visible;}
     .workflow-panel{position:static;top:auto;align-self:stretch;width:100%;height:auto;min-height:0;max-height:none;overflow:visible;border-radius:var(--studio-radius-md);}
     .workspace-canvas{position:relative;display:flex;flex-direction:column;width:100%;height:auto;min-height:340px;overflow:visible;overscroll-behavior:auto;scrollbar-gutter:auto;}
+    .studio-shell>.workflow-panel,.studio-shell>.workspace-canvas{grid-column:1;grid-row:auto;}
     .output#workspaceOutput{flex:none;min-height:0;}
     .footer-note{flex:none;width:100%;margin-top:var(--studio-space-5);}
   }
@@ -1477,6 +1484,7 @@ button:disabled{opacity:.5;cursor:not-allowed;}
     </aside>
     <section class="workspace-canvas" id="workspaceCanvas" aria-label="Social Studio canvas">
       <div class="workspace-placeholder" id="workspacePlaceholder" aria-hidden="true"><span>[canvas]</span></div>
+      <div class="workspace-image-preview" id="workspaceImagePreview" hidden><img id="workspaceProductImage" alt="Geselecteerd productbeeld"></div>
     <div class="output" id="workspaceOutput" hidden>
       <div class="output-head">
         <h2 id="workspaceHeading">Gegenereerde content</h2>
@@ -1566,7 +1574,7 @@ function saveStudioWorkflowView(workflow){
   const fragment=studioWorkflowResultCache[workflow];
   while(results?.firstChild) fragment.append(results.firstChild);
   const advanced=document.getElementById('advancedAdjustments');
-  studioWorkflowViewState[workflow]={meta:document.getElementById('outputMeta')?.textContent||'',download:document.getElementById('downloadAllBtn')?.style.display||'none',adjustDisplay:document.getElementById('imgAdjust')?.style.display||'none',advancedHidden:advanced?.hidden??true,advancedOpen:advanced?.open??false};
+  studioWorkflowViewState[workflow]={meta:document.getElementById('outputMeta')?.textContent||'',download:document.getElementById('downloadAllBtn')?.style.display||'none',adjustDisplay:document.getElementById('imgAdjust')?.style.display||'none',advancedHidden:advanced?.hidden??true,advancedOpen:advanced?.open??false,image:typeof selectedImage==='string'?selectedImage:null,preview:!document.getElementById('workspaceImagePreview')?.hidden};
 }
 function restoreStudioWorkflowView(workflow){
   const results=document.getElementById('resultsArea');
@@ -1600,6 +1608,7 @@ function showStudioWorkflow(workflow){
   document.getElementById('workspaceOutput').hidden=false;
   document.getElementById('outputType').value=workflow==='video'?'ai-video':'image';
   restoreStudioWorkflowView(workflow);
+  if(typeof syncWorkspaceImagePreview === 'function') syncWorkspaceImagePreview(true);
   updateVideoMode();
   if(workflow==='video'&&typeof syncAIVideoImage==='function')syncAIVideoImage();
   document.getElementById(workflow==='video'?'chooseVideo':'chooseAdvertisement').setAttribute('aria-pressed','true');
@@ -1619,6 +1628,7 @@ function showWorkflowChooser(){
   document.getElementById('stepIndicator').hidden=true;
   document.getElementById('workspaceOutput').hidden=true;
   document.getElementById('workspacePlaceholder').hidden=false;
+  if(typeof hideWorkspaceImagePreview === 'function') hideWorkspaceImagePreview();
   document.getElementById('outputType').value='image';
   if(typeof updateVideoMode==='function')updateVideoMode();
   document.getElementById('chooseAdvertisement').setAttribute('aria-pressed','false');
@@ -2121,6 +2131,33 @@ function corsSafe(url){
   return "https://images.weserv.nl/?url=" + url.replace(/^https?:\/\//, "");
 }
 
+let workspacePreviewSource = null;
+function hideWorkspaceImagePreview(){
+  document.getElementById('workspaceImagePreview').hidden = true;
+}
+function syncWorkspaceImagePreview(restoring = false){
+  const changed = workspacePreviewSource !== selectedImage;
+  workspacePreviewSource = selectedImage;
+  if(!activeStudioWorkflow) return;
+  const preview = document.getElementById('workspaceImagePreview');
+  const output = document.getElementById('workspaceOutput');
+  const placeholder = document.getElementById('workspacePlaceholder');
+  const state = studioWorkflowViewState[activeStudioWorkflow];
+  if(restoring && state?.image === selectedImage && !state.preview && document.getElementById('resultsArea').firstChild){
+    preview.hidden = true;
+    output.hidden = false;
+    placeholder.hidden = true;
+    return;
+  }
+  if(!changed && !restoring) return;
+  preview.hidden = !selectedImage;
+  output.hidden = true;
+  placeholder.hidden = !!selectedImage;
+  const image = document.getElementById('workspaceProductImage');
+  if(selectedImage) image.src = selectedImage;
+  else image.removeAttribute('src');
+}
+
 function renderImageGallery(){
   const brand = document.getElementById('brand').value;
   const gallery = document.getElementById('imgGallery');
@@ -2135,6 +2172,7 @@ function renderImageGallery(){
   if(!all.length){
     gallery.innerHTML = ``;
     selectedImage = null;
+    syncWorkspaceImagePreview();
     if(typeof syncBackgroundImage === 'function') syncBackgroundImage();
     return;
   }
@@ -2143,6 +2181,7 @@ function renderImageGallery(){
     selectedImage = all[0];
   }
 
+  syncWorkspaceImagePreview();
   if(typeof syncBackgroundImage === 'function') syncBackgroundImage();
   gallery.innerHTML = all.map((src, i) => `
     <div class="img-thumb ${src === selectedImage ? 'selected' : ''}" data-src="${escapeHtml(src)}" onclick="selectImage('${escapeHtml(src).replace(/'/g,"\\'")}')">
@@ -2164,6 +2203,7 @@ function scrollGallery(direction){
 
 function selectImage(src){
   selectedImage = src;
+  workspacePreviewSource = null;
   if(typeof clearBackgroundPreview === 'function') clearBackgroundPreview();
   renderImageGallery();
   document.querySelectorAll('.product-img').forEach(img => { img.src = src; });
@@ -2184,6 +2224,7 @@ document.getElementById('uploadInput').addEventListener('change', function(e){
   reader.onload = function(ev){
     uploadedImages.unshift(ev.target.result);
     selectedImage = ev.target.result;
+    workspacePreviewSource = null;
     renderImageGallery();
   };
   reader.readAsDataURL(file);
@@ -2206,6 +2247,8 @@ document.getElementById('libraryUploadInput').addEventListener('change', functio
   }))).then(images => {
     if(!uploadedLibraryImages[brand]) uploadedLibraryImages[brand] = [];
     uploadedLibraryImages[brand].unshift(...images);
+    selectedImage = images[0];
+    workspacePreviewSource = null;
     renderImageGallery();
   });
   e.target.value = '';
@@ -2349,6 +2392,9 @@ function setAdGenerationState(generating){
   resultsArea.setAttribute('aria-busy', String(generating));
   btn.innerHTML = generating ? 'Generating...' : 'Genereer advertentie <span class="arrow" aria-hidden="true">&rarr;</span>';
   if(generating){
+    document.getElementById('workspaceImagePreview').hidden = true;
+    document.getElementById('workspaceOutput').hidden = false;
+    document.getElementById('workspacePlaceholder').hidden = true;
     document.getElementById('downloadAllBtn').style.display = 'none';
     document.getElementById('imgAdjust').style.display = 'none';
     document.getElementById('outputMeta').textContent = 'Generating...';
@@ -2456,6 +2502,9 @@ Als hashtags niet van toepassing zijn voor dit platform, geef een lege array ter
 }
 
 function renderResults(variants, platform, product, isOffline, target=null){
+  document.getElementById('workspaceImagePreview').hidden = true;
+  document.getElementById('workspaceOutput').hidden = false;
+  document.getElementById('workspacePlaceholder').hidden = true;
   canvasResizeObserver.disconnect();
   const resultsArea = target || document.getElementById('resultsArea');
   const limits = PLATFORM_LIMITS[platform];

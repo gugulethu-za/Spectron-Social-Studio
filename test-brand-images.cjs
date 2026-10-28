@@ -19,7 +19,7 @@ function session(){
  el('brand').value='Bluey';
  const context=vm.createContext({console,structuredClone,indexedDB,crypto:require('node:crypto').webcrypto,
   document:{getElementById:el,createElement:()=>el(Symbol()),querySelector:()=>el('image'),querySelectorAll:selector=>selector === '.gallery-arrow' ? [el('prevArrow'),el('nextArrow')] : []},
-  brandImageRecords:[],uploadedImages:[],uploadedLibraryImages:{},BRAND_IMAGES:{Bluey:['original.png'],Stitch:['stitch.png']},selectedImage:'original.png',currentBrand:'Bluey',variantVisuals:[],
+  activeStudioWorkflow:null,studioWorkflowViewState:{advertisement:null,video:null},brandImageRecords:[],uploadedImages:[],uploadedLibraryImages:{},BRAND_IMAGES:{Bluey:['original.png'],Stitch:['stitch.png']},selectedImage:'original.png',currentBrand:'Bluey',variantVisuals:[],
   escapeHtml:value=>String(value).replaceAll('"','&quot;'),SPECTRON_LOGO_SRC:'logo.png',selectVariant(){},applyImageTransform(){},applyTextScale(){},
   canvasResizeObserver:{disconnect(){},observe(){}},imgScale:1,imgPosX:50,imgPosY:50,DEFAULT_TEXT_SCALE:1.5,
   getFormatSpec(){return {width:context.testWidth || 1080,height:context.testHeight,value:`${context.testWidth || 1080}x${context.testHeight}`};},
@@ -27,7 +27,7 @@ function session(){
  });
  const run=code=>vm.runInContext(code,context);
  run(page.slice(page.indexOf('const DEFAULT_GRADIENT_DARKNESS'),page.indexOf('const DEFAULT_TEXT_SCALE')));
- run(page.slice(page.indexOf('function renderImageGallery()'),page.indexOf("document.getElementById('uploadInput').addEventListener")));
+ run(page.slice(page.indexOf('let workspacePreviewSource ='),page.indexOf("document.getElementById('uploadInput').addEventListener")));
  run(page.slice(page.indexOf('function renderResults('),page.indexOf('function onEdit(')));
  run(fs.readFileSync('studio-library.js','utf8'));
  return {context,run,el};

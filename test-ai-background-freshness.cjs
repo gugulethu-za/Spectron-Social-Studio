@@ -66,11 +66,11 @@ test('late result after selecting another photo cannot reappear',async()=>{
 
 test('picker excludes saved AI and legacy mixed uploads on both initial load and refresh',()=>{
  const gallery={innerHTML:''};
- const ctx=vm.createContext({selectedImage:null,BRAND_IMAGES:{IMC:[original]},
+ const ctx=vm.createContext({activeStudioWorkflow:null,selectedImage:null,BRAND_IMAGES:{IMC:[original]},
    brandImageRecords:[{image:old,source:'ai-background',brand:'IMC'}],uploadedImages:[old],uploadedLibraryImages:{IMC:[old,original]},
    document:{getElementById:id=>id==='brand'?{value:'IMC'}:gallery,querySelectorAll:()=>[]},escapeHtml:s=>s,
    syncBackgroundImage(){},updateGalleryArrowVisibility(){}});
- vm.runInContext(page.slice(page.indexOf('function renderImageGallery(){'),page.indexOf('function scrollGallery(')),ctx);
+ vm.runInContext(page.slice(page.indexOf('let workspacePreviewSource ='),page.indexOf('function scrollGallery(')),ctx);
  ctx.renderImageGallery();assert.equal(ctx.selectedImage,original);assert.doesNotMatch(gallery.innerHTML,/b2xk|ai-image-badge/);
  ctx.selectedImage=old;ctx.renderImageGallery();assert.equal(ctx.selectedImage,old,'explicitly applied AI artwork remains usable by ads');
  assert.doesNotMatch(gallery.innerHTML,/b2xk/);
