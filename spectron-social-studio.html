@@ -1197,9 +1197,11 @@ button:disabled{opacity:.5;cursor:not-allowed;}
   .workspace-canvas{position:relative;min-width:0;min-height:calc(100vh - 220px);background:#d1d1d1;overflow:hidden;}
   .workspace-placeholder{position:absolute;inset:0;display:grid;place-items:center;color:#34377a;font-size:30px;font-weight:400;}
   .workspace-placeholder[hidden],.workspace-image-preview[hidden]{display:none!important;}
-  .workspace-image-preview{position:absolute;inset:0;display:grid;place-items:center;padding:24px;}
-  .workspace-image-preview img{display:block;width:100%;height:100%;min-height:0;max-height:100%;object-fit:contain;object-position:center;}
-  @media(max-width:600px){.workspace-image-preview{padding:16px;}}
+  .workspace-image-preview{position:absolute;inset:0;display:grid;place-items:center;}
+  .workspace-image-preview img{display:block;min-height:0;max-width:100%;max-height:100%;object-fit:contain;object-position:center;animation:workspace-image-pop 200ms ease-out both;}
+  .workspace-image-preview:not([hidden])~.footer-note{display:none;}
+  @keyframes workspace-image-pop{from{opacity:0;transform:scale(.97);}to{opacity:1;transform:scale(1);}}
+  @media(prefers-reduced-motion:reduce){.workspace-image-preview img{animation:none;}}
   .output#workspaceOutput{position:relative;z-index:1;width:100%;min-width:0;min-height:100%;padding:20px;background:transparent;}
   .output#workspaceOutput[hidden]{display:none!important;}
   .output-head{flex-wrap:wrap;}
@@ -2134,6 +2136,23 @@ function corsSafe(url){
 let workspacePreviewSource = null;
 function hideWorkspaceImagePreview(){
   document.getElementById('workspaceImagePreview').hidden = true;
+  document.getElementById('workspaceCanvas').style.background = '';
+}
+function sizeWorkspaceProductImage(){
+  const preview = document.getElementById('workspaceImagePreview');
+  const image = document.getElementById('workspaceProductImage');
+  if(preview.hidden || !image.naturalWidth || !image.naturalHeight) return;
+  const scale = Math.min(preview.clientWidth / image.naturalWidth, preview.clientHeight / image.naturalHeight);
+  image.style.width = `${image.naturalWidth * scale}px`;
+  image.style.height = `${image.naturalHeight * scale}px`;
+}
+function revealWorkspaceProductImage(){
+  const image = document.getElementById('workspaceProductImage');
+  sizeWorkspaceProductImage();
+  image.style.visibility = '';
+  image.style.animation = 'none';
+  void image.offsetWidth;
+  image.style.animation = '';
 }
 function syncWorkspaceImagePreview(restoring = false){
   const changed = workspacePreviewSource !== selectedImage;
@@ -2144,18 +2163,23 @@ function syncWorkspaceImagePreview(restoring = false){
   const placeholder = document.getElementById('workspacePlaceholder');
   const state = studioWorkflowViewState[activeStudioWorkflow];
   if(restoring && state?.image === selectedImage && !state.preview && document.getElementById('resultsArea').firstChild){
-    preview.hidden = true;
+    hideWorkspaceImagePreview();
     output.hidden = false;
     placeholder.hidden = true;
     return;
   }
   if(!changed && !restoring) return;
   preview.hidden = !selectedImage;
+  document.getElementById('workspaceCanvas').style.background = selectedImage ? 'transparent' : '';
   output.hidden = true;
   placeholder.hidden = !!selectedImage;
   const image = document.getElementById('workspaceProductImage');
-  if(selectedImage) image.src = selectedImage;
-  else image.removeAttribute('src');
+  if(selectedImage){
+    image.style.visibility = 'hidden';
+    image.onload = revealWorkspaceProductImage;
+    image.src = selectedImage;
+    if(image.complete && image.naturalWidth) revealWorkspaceProductImage();
+  }else image.removeAttribute('src');
 }
 
 function renderImageGallery(){
@@ -2393,6 +2417,7 @@ function setAdGenerationState(generating){
   btn.innerHTML = generating ? 'Generating...' : 'Genereer advertentie <span class="arrow" aria-hidden="true">&rarr;</span>';
   if(generating){
     document.getElementById('workspaceImagePreview').hidden = true;
+    document.getElementById('workspaceCanvas').style.background = '';
     document.getElementById('workspaceOutput').hidden = false;
     document.getElementById('workspacePlaceholder').hidden = true;
     document.getElementById('downloadAllBtn').style.display = 'none';
@@ -2503,6 +2528,7 @@ Als hashtags niet van toepassing zijn voor dit platform, geef een lege array ter
 
 function renderResults(variants, platform, product, isOffline, target=null){
   document.getElementById('workspaceImagePreview').hidden = true;
+  document.getElementById('workspaceCanvas').style.background = '';
   document.getElementById('workspaceOutput').hidden = false;
   document.getElementById('workspacePlaceholder').hidden = true;
   canvasResizeObserver.disconnect();
@@ -2708,6 +2734,8 @@ document.getElementById('format').addEventListener('change', ()=>{
   reformatCurrentAds();
 });
 document.getElementById('uspChips').addEventListener('click', ()=> setTimeout(updateStepIndicator, 0));
+const workspaceImageResizeObserver = new ResizeObserver(sizeWorkspaceProductImage);
+workspaceImageResizeObserver.observe(document.getElementById('workspaceImagePreview'));
 updateStepIndicator();
 updateFormatOptions();
 renderImageGallery();
