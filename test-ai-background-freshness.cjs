@@ -20,7 +20,7 @@ function session({storage=new Map(),records=[],outputs=[]}={}){
    async persistBrandImage(record){ctx.brandImageRecords.push(record);},renderImageGallery(){}
  });
  vm.runInContext(source,ctx);
- vm.runInContext('backgroundImageData=async()=>selectedImage',ctx);
+ vm.runInContext('backgroundImageData=async src=>src',ctx);
  el('backgroundDescription').value='Neutral background';
  return {ctx,el,requests,storage};
 }
@@ -29,6 +29,9 @@ test('new clicks clear preview synchronously, use unique no-store requests, and 
  const s=session({outputs:[fresh,()=>{throw Error('mock failure');}]});
  assert.equal(s.el('backgroundPreview').hidden,true);assert.equal(s.el('backgroundPreview').src,undefined);
  await s.ctx.generateBackground();assert.equal(s.el('backgroundPreview').src,fresh);
+ assert.equal(s.ctx.selectedImage,fresh);
+ assert.equal(s.el('backgroundAccept').hidden,true);
+ assert.equal(s.ctx.brandImageRecords.length,1);
  const pending=s.ctx.generateBackground();
  assert.equal(s.el('backgroundPreview').hidden,true);assert.equal(s.el('backgroundPreview').src,undefined);
  await pending;assert.equal(s.el('backgroundPreview').hidden,true);
@@ -47,7 +50,7 @@ test('saved duplicates retry once, accept only fresh output, and twice repeated 
  assert.match(s.el('backgroundError').textContent,/eerdere afbeelding/);
 });
 
-test('unaccepted result fingerprints survive reload; duplicate source bytes are rejected across MIME labels',async()=>{
+test('automatically applied result fingerprints survive reload; duplicate source bytes are rejected across MIME labels',async()=>{
  const storage=new Map();
  const first=session({storage,outputs:[fresh]});await first.ctx.generateBackground();
  const reload=session({storage,outputs:[fresh,fresh]});assert.equal(reload.el('backgroundPreview').hidden,true);
@@ -64,6 +67,27 @@ test('late result after selecting another photo cannot reappear',async()=>{
  assert.equal(s.el('backgroundPreview').hidden,true);assert.equal(s.ctx.selectedImage,'another-original');
 });
 
+test('result is selected before saving completes; a late save does not override a new product',async()=>{
+ const s=session({outputs:[fresh]});
+ let finishSave,started;
+ const saving=new Promise(resolve=>{started=resolve;});
+ s.ctx.persistBrandImage=record=>new Promise(resolve=>{
+   finishSave=()=>{s.ctx.brandImageRecords.push(record);resolve(record);};
+   started();
+ });
+ const pending=s.ctx.generateBackground();
+ await saving;
+ assert.equal(s.ctx.selectedImage,fresh,'Canvas selection must not wait for storage');
+ assert.equal(s.el('backgroundAccept').hidden,true);
+ s.ctx.selectImage('another-product');
+ finishSave();
+ await pending;
+ assert.equal(s.ctx.selectedImage,'another-product');
+ assert.equal(s.el('backgroundPreview').hidden,true);
+ assert.equal(s.el('backgroundAccept').hidden,true);
+ assert.equal(s.el('backgroundError').textContent,'');
+});
+
 test('picker excludes saved AI and legacy mixed uploads on both initial load and refresh',()=>{
  const gallery={innerHTML:''};
  const ctx=vm.createContext({activeStudioWorkflow:null,selectedImage:null,BRAND_IMAGES:{IMC:[original]},
@@ -74,6 +98,13 @@ test('picker excludes saved AI and legacy mixed uploads on both initial load and
  ctx.renderImageGallery();assert.equal(ctx.selectedImage,original);assert.doesNotMatch(gallery.innerHTML,/b2xk|ai-image-badge/);
  ctx.selectedImage=old;ctx.renderImageGallery();assert.equal(ctx.selectedImage,old,'explicitly applied AI artwork remains usable by ads');
  assert.doesNotMatch(gallery.innerHTML,/b2xk/);
+ ctx.backgroundAccepted=fresh;
+ ctx.selectedImage=fresh;
+ ctx.renderImageGallery();
+ assert.equal(ctx.selectedImage,fresh,'A pending automatic save must not reset the selected result');
+ ctx.BRAND_IMAGES.IMC=[];ctx.uploadedImages=[];ctx.uploadedLibraryImages={};
+ ctx.renderImageGallery();
+ assert.equal(ctx.selectedImage,fresh,'Automatic selection also survives an empty product collection');
 });
 
 test('server generation responses explicitly forbid caching',()=>{

@@ -8,3 +8,7 @@
 
 # Installed dependencies
 node_modules/
+
+test-canvas-preview.cjs
+
+.playwright-mcp/

@@ -4,6 +4,7 @@ let backgroundAccepted = null;
 let backgroundPreview = null;
 let backgroundRequest = null;
 let backgroundSaving = false;
+let backgroundSaveFailed = false;
 let backgroundPreviewMetadata = null;
 const backgroundFingerprints = new Set();
 const BACKGROUND_HISTORY_KEY = 'spectron-ai-background-fingerprints-v1';
@@ -13,6 +14,7 @@ function clearBackgroundPreview(){
   backgroundRequest=null;
   backgroundPreview=null;
   backgroundPreviewMetadata=null;
+  backgroundSaveFailed=false;
   renderBackgroundControls();
 }
 async function backgroundFingerprint(image){
@@ -45,7 +47,7 @@ function renderBackgroundControls() {
   backgroundElement('backgroundDescription').disabled = busy;
   backgroundElement('backgroundAccept').disabled = busy || !backgroundPreview;
   backgroundElement('backgroundRestore').disabled = backgroundSaving;
-  backgroundElement('backgroundAccept').hidden = !backgroundPreview;
+  backgroundElement('backgroundAccept').hidden = !backgroundPreview || !backgroundSaveFailed;
   backgroundElement('backgroundStatus').textContent = busy ? 'Achtergrond wordt gegenereerd…' : '';
   const preview = backgroundElement('backgroundPreview');
   preview.hidden = !backgroundPreview;
@@ -77,6 +79,7 @@ async function generateBackground() {
   error.textContent = '';
   backgroundPreview=null;
   backgroundPreviewMetadata=null;
+  backgroundSaveFailed=false;
   renderBackgroundControls();
   const description = backgroundElement('backgroundDescription').value.trim();
   if(!selectedImage || !backgroundOriginal) { error.textContent = 'Selecteer eerst een afbeelding.'; return; }
@@ -116,6 +119,9 @@ async function generateBackground() {
       }
       backgroundPreview=result.image;
       backgroundPreviewMetadata=metadata;
+      backgroundRequest=null;
+      clearTimeout(timer);
+      await acceptBackground();
       break;
     }
   } catch(e) {
@@ -127,6 +133,7 @@ async function generateBackground() {
 }
 function applyBackgroundImage(src) {
   selectImage(src);
+  if(typeof syncAIVideoImage === 'function') syncAIVideoImage();
 }
 async function acceptBackground() {
   if(backgroundRequest || backgroundSaving || !backgroundPreview || !backgroundPreviewMetadata) return;
@@ -134,23 +141,27 @@ async function acceptBackground() {
   const original = backgroundOriginal;
   const metadata = backgroundPreviewMetadata;
   backgroundSaving = true;
+  backgroundSaveFailed = false;
   backgroundElement('backgroundError').textContent = '';
+  backgroundAccepted = preview;
+  applyBackgroundImage(preview);
+  backgroundPreview = preview;
+  backgroundPreviewMetadata = metadata;
   renderBackgroundControls();
   let saved = false;
   try {
     await persistBrandImage({id:crypto.randomUUID(), source:'ai-background', image:preview,
       createdAt:new Date().toISOString(), ...metadata});
     saved = true;
-    if(backgroundPreview === preview && backgroundOriginal === original && backgroundElement('brand').value === metadata.brand) {
-      backgroundAccepted = preview;
-      applyBackgroundImage(preview);
-    } else renderImageGallery();
   } catch {
-    backgroundElement('backgroundError').textContent = 'Afbeelding kon niet worden opgeslagen. Controleer vrije browseropslag en probeer opnieuw. De preview blijft beschikbaar.';
+    if(selectedImage === preview && backgroundOriginal === original && backgroundElement('brand').value === metadata.brand){
+      backgroundSaveFailed = true;
+      backgroundElement('backgroundError').textContent = 'Afbeelding is toegepast, maar kon niet worden opgeslagen. Controleer vrije browseropslag en probeer opslaan opnieuw.';
+    }
   } finally {
     backgroundSaving = false;
     renderBackgroundControls();
-    if(saved) backgroundElement('backgroundStatus').textContent = 'Nieuwe AI-afbeelding opgeslagen en toegepast.';
+    if(saved && selectedImage === preview) backgroundElement('backgroundStatus').textContent = 'Nieuwe AI-afbeelding opgeslagen en toegepast.';
   }
 }
 function restoreBackground() {
