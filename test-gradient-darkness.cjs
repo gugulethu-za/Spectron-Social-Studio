@@ -7,7 +7,8 @@ const context=vm.createContext({document:{getElementById:id=>controls[id],queryS
 vm.runInContext(page.slice(page.indexOf('const DEFAULT_GRADIENT_DARKNESS'),page.indexOf('const DEFAULT_TEXT_SCALE')),context);
 const run=source=>vm.runInContext(source,context);
 const gradient='linear-gradient(to bottom, transparent 25%, rgba(0,0,0,.24) 50%, rgba(0,0,0,.72) 80%, rgba(0,0,0,.88) 100%)';
-assert.equal(page.split(gradient).length-1,2,'Live and saved gradients retain their original direction/stops');
+const resolvedPage=page.replace(/var\(--(artwork-scrim-[\w-]+)\)/g,(_,name)=>page.match(new RegExp(`--${name}:([^;]+);`))[1]);
+assert.equal(resolvedPage.split(gradient).length-1,2,'Live and saved gradients retain their original direction/stops');
 assert.match(page,/\.scrim,\.saved-shade\{opacity:calc\(var\(--gradient-darkness, \.25\) \* 1\.1363636363636364\);\}/);
 assert.match(page,/<label for="gradientDarkness">Gradient darkness <span id="gradientDarknessValue">25%<\/span>/);
 assert.match(page,/<input type="range" id="gradientDarkness" min="0" max="60" step="5" value="25" aria-label="Gradient darkness" aria-valuemin="0" aria-valuemax="60" aria-valuenow="25" oninput="applyGradientDarkness\(\)">/);

@@ -82,7 +82,7 @@ test('preview fills explicit frames without layout padding or white background',
  assert.match(page,/\.ai-video-frame-portrait\{aspect-ratio:9\/16;/);
  assert.match(page,/\.ai-video-frame-landscape\{aspect-ratio:16\/9;width:100%;/);
  assert.match(page,/width:min\(100%,calc\(var\(--ai-video-preview-height/);
- assert.match(page,/\.ai-video-frame \.video-preview\{[^}]*width:100%;height:100%;[^}]*object-fit:contain;[^}]*background:#000;position:absolute;inset:0;/);
+ assert.match(page,/\.ai-video-frame \.video-preview\{[^}]*width:100%;height:100%;[^}]*object-fit:contain;[^}]*background:var\(--media-black\);position:absolute;inset:0;/);
 });
 
 test('image decode failure stops before a paid start',async()=>{

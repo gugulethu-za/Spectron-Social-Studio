@@ -12,3 +12,8 @@ node_modules/
 test-canvas-preview.cjs
 
 .playwright-mcp/
+
+artifacts/
+test-brand-palette.cjs
+test-controls-layout.cjs
+test-header-logo.cjs
